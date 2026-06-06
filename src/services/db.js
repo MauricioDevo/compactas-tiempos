@@ -1,0 +1,326 @@
+/**
+ * db.js
+ * Servicio de Persistencia y Base de Datos (Híbrido: LocalStorage / Supabase)
+ * Petroaseo
+ */
+
+import { createClient } from '@supabase/supabase-js';
+
+// Intentar leer las variables de entorno de Supabase
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+
+// Verificar si Supabase está configurado
+const isSupabaseConfigured = supabaseUrl.trim() !== '' && supabaseAnonKey.trim() !== '';
+
+export const supabase = isSupabaseConfigured ? createClient(supabaseUrl, supabaseAnonKey) : null;
+
+if (isSupabaseConfigured) {
+  console.log('🔌 Conectado a la base de datos de Supabase en tiempo real.');
+} else {
+  console.log('📁 Utilizando base de datos local del navegador (LocalStorage).');
+}
+
+export const PLACAS_PRECONFIGURADAS = [
+  'BWR-724',
+  'BWP-886',
+  'BWQ-764',
+  'BWP-917',
+  'BWQ-863',
+  'BZV-711',
+  'BZV-736',
+  'BZU-913',
+  'CBJ-823'
+];
+
+const CONDUCTORES_INICIALES = [
+  { id: 'c1111111-1111-1111-1111-111111111111', nombre: 'Paola Tesen', codigo: 'A' },
+  { id: 'c2222222-2222-2222-2222-222222222222', nombre: 'Jesus Laban', codigo: 'B' },
+  { id: 'c3333333-3333-3333-3333-333333333333', nombre: 'Carlos Flores', codigo: 'C' },
+  { id: 'c4444444-4444-4444-4444-444444444444', nombre: 'Juan Quispe', codigo: 'D' },
+  { id: 'c5555555-5555-5555-5555-555555555555', nombre: 'Manuel Ramirez', codigo: 'E' },
+  { id: 'c6666666-6666-6666-6666-666666666666', nombre: 'Luis Sanchez', codigo: 'F' }
+];
+
+const listeners = new Set();
+
+export const subscribeToDB = (callback) => {
+  listeners.add(callback);
+  
+  // Si estamos en Supabase, también nos suscribimos en tiempo real a los cambios de la tabla 'registros'
+  let subscription = null;
+  if (supabase) {
+    subscription = supabase
+      .channel('schema-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'registros' }, () => {
+        callback();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'conductores' }, () => {
+        callback();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'asistencia' }, () => {
+        callback();
+      })
+      .subscribe();
+  }
+
+  return () => {
+    listeners.delete(callback);
+    if (subscription) {
+      supabase.removeChannel(subscription);
+    }
+  };
+};
+
+const notifySubscribers = () => {
+  listeners.forEach(cb => cb());
+};
+
+const initializeDB = () => {
+  if (!localStorage.getItem('petrolimpio_vehiculos')) {
+    const vehiculos = PLACAS_PRECONFIGURADAS.map((placa, index) => ({
+      placa,
+      orden: index + 1
+    }));
+    localStorage.setItem('petrolimpio_vehiculos', JSON.stringify(vehiculos));
+  }
+
+  if (!localStorage.getItem('petrolimpio_conductores')) {
+    localStorage.setItem('petrolimpio_conductores', JSON.stringify(CONDUCTORES_INICIALES));
+  }
+
+  if (!localStorage.getItem('petrolimpio_registros')) {
+    localStorage.setItem('petrolimpio_registros', JSON.stringify([]));
+  }
+
+  if (!localStorage.getItem('petrolimpio_asistencia')) {
+    localStorage.setItem('petrolimpio_asistencia', JSON.stringify({}));
+  }
+};
+
+initializeDB();
+
+export const getVehicles = () => {
+  return PLACAS_PRECONFIGURADAS.map((placa, index) => ({ placa, orden: index + 1 }));
+};
+
+export const getDrivers = async () => {
+  if (supabase) {
+    const { data, error } = await supabase.from('conductores').select('*');
+    if (error) {
+      console.error('Error al obtener conductores en Supabase:', error);
+      return [];
+    }
+    return data || [];
+  }
+  return JSON.parse(localStorage.getItem('petrolimpio_conductores')) || [];
+};
+
+export const addDriver = async (nombre) => {
+  if (supabase) {
+    // Buscar si ya existe
+    const { data: existing, error: searchError } = await supabase
+      .from('conductores')
+      .select('*')
+      .eq('nombre', nombre.trim());
+      
+    if (searchError) console.error('Error al buscar conductor:', searchError);
+    if (existing && existing.length > 0) {
+      return existing[0];
+    }
+
+    // Contar total para generar el código autosecuencial (A, B, C...)
+    const { data: all, error: countError } = await supabase.from('conductores').select('id');
+    if (countError) console.error('Error al contar conductores:', countError);
+    const count = all ? all.length : 0;
+    const codigo = generateDriverCode(count);
+
+    const { data, error } = await supabase
+      .from('conductores')
+      .insert([{ nombre: nombre.trim(), codigo }])
+      .select();
+
+    if (error) console.error('Error al registrar conductor en Supabase:', error);
+    if (data && data.length > 0) {
+      notifySubscribers();
+      return data[0];
+    }
+  }
+
+  // Fallback LocalStorage
+  const drivers = JSON.parse(localStorage.getItem('petrolimpio_conductores')) || [];
+  const exists = drivers.find(d => d.nombre.trim().toLowerCase() === nombre.trim().toLowerCase());
+  if (exists) return exists;
+
+  const codigo = generateDriverCode(drivers.length);
+  const newDriver = { id: crypto.randomUUID(), nombre: nombre.trim(), codigo };
+  drivers.push(newDriver);
+  localStorage.setItem('petrolimpio_conductores', JSON.stringify(drivers));
+  notifySubscribers();
+  return newDriver;
+};
+
+const generateDriverCode = (index) => {
+  let code = '';
+  let temp = index;
+  while (temp >= 0) {
+    code = String.fromCharCode((temp % 26) + 65) + code;
+    temp = Math.floor(temp / 26) - 1;
+  }
+  return code;
+};
+
+// ----------------------------------------------------
+// GESTIÓN DE ASISTENCIA DIARIA MASIVA
+// ----------------------------------------------------
+
+// Guardar conductores activos para una fecha específica (Entrada Masiva)
+export const saveActiveDriversForDate = async (dateStr, namesArray) => {
+  if (supabase) {
+    // Registrar cada conductor en Supabase si es nuevo
+    for (const name of namesArray) {
+      await addDriver(name);
+    }
+    // Guardar la asistencia
+    const { error } = await supabase
+      .from('asistencia')
+      .upsert({ fecha: dateStr, nombres: namesArray });
+
+    if (error) console.error('Error al guardar asistencia en Supabase:', error);
+    notifySubscribers();
+    return await getActiveDriversForDate(dateStr);
+  }
+
+  // Fallback LocalStorage
+  const asistencia = JSON.parse(localStorage.getItem('petrolimpio_asistencia')) || {};
+  const driverIds = [];
+  for (const name of namesArray) {
+    const d = await addDriver(name);
+    driverIds.push(d.id);
+  }
+
+  asistencia[dateStr] = driverIds;
+  localStorage.setItem('petrolimpio_asistencia', JSON.stringify(asistencia));
+  notifySubscribers();
+  
+  return await getActiveDriversForDate(dateStr);
+};
+
+// Obtener conductores que asistieron en una fecha
+export const getActiveDriversForDate = async (dateStr) => {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('asistencia')
+      .select('nombres')
+      .eq('fecha', dateStr)
+      .maybeSingle();
+
+    if (error) console.error('Error al obtener asistencia en Supabase:', error);
+    if (!data || !data.nombres || data.nombres.length === 0) return [];
+    
+    // Obtener los objetos conductores correspondientes a los nombres de asistencia
+    const allDrivers = await getDrivers();
+    return allDrivers.filter(d => data.nombres.includes(d.nombre));
+  }
+
+  // Fallback LocalStorage
+  const asistencia = JSON.parse(localStorage.getItem('petrolimpio_asistencia')) || {};
+  const activeIds = asistencia[dateStr] || [];
+  const allDrivers = await getDrivers();
+  return allDrivers.filter(d => activeIds.includes(d.id));
+};
+
+// ----------------------------------------------------
+// REGISTROS OPERATIVOS
+// ----------------------------------------------------
+export const getRecords = async (dateStr) => {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('registros')
+      .select('*')
+      .eq('fecha', dateStr);
+
+    if (error) {
+      console.error('Error al obtener registros en Supabase:', error);
+      return [];
+    }
+    return data || [];
+  }
+
+  // Fallback LocalStorage
+  const records = JSON.parse(localStorage.getItem('petrolimpio_registros')) || [];
+  return records.filter(r => r.fecha === dateStr);
+};
+
+export const saveRecord = async (recordData) => {
+  const horaInicio = recordData.hora_inicio;
+  const hourNum = parseInt(horaInicio.split(':')[0], 10);
+  let turno = 'Mañana';
+  if (hourNum >= 14 && hourNum < 22) {
+    turno = 'Tarde';
+  } else if (hourNum >= 22 || hourNum < 6) {
+    turno = 'Noche';
+  }
+
+  const id = recordData.id || crypto.randomUUID();
+  const newRecord = {
+    ...recordData,
+    id,
+    turno,
+    updated_at: new Date().toISOString()
+  };
+
+  if (supabase) {
+    const { error } = await supabase.from('registros').upsert(newRecord);
+    if (error) console.error('Error al guardar registro en Supabase:', error);
+    notifySubscribers();
+    return newRecord;
+  }
+
+  // Fallback LocalStorage
+  const records = JSON.parse(localStorage.getItem('petrolimpio_registros')) || [];
+  const existingIndex = records.findIndex(r => r.id === id);
+  if (existingIndex > -1) {
+    records[existingIndex] = newRecord;
+  } else {
+    records.push(newRecord);
+  }
+
+  localStorage.setItem('petrolimpio_registros', JSON.stringify(records));
+  notifySubscribers();
+  return newRecord;
+};
+
+export const deleteRecord = async (id) => {
+  if (supabase) {
+    const { error } = await supabase.from('registros').delete().eq('id', id);
+    if (error) console.error('Error al eliminar registro en Supabase:', error);
+    notifySubscribers();
+    return;
+  }
+
+  // Fallback LocalStorage
+  let records = JSON.parse(localStorage.getItem('petrolimpio_registros')) || [];
+  records = records.filter(r => r.id !== id);
+  localStorage.setItem('petrolimpio_registros', JSON.stringify(records));
+  notifySubscribers();
+};
+
+export const getMinutesFromTime = (timeStr) => {
+  if (!timeStr) return 0;
+  const [hStr, mStr] = timeStr.split(':');
+  const h = parseInt(hStr, 10);
+  const m = parseInt(mStr, 10);
+  if (h < 6) {
+    return (h + 18) * 60 + m;
+  } else {
+    return (h - 6) * 60 + m;
+  }
+};
+
+export const formatMinutesToTime = (minutes) => {
+  let totalHours = Math.floor(minutes / 60) + 6;
+  let actualHours = totalHours % 24;
+  let mins = minutes % 60;
+  return `${String(actualHours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+};

@@ -42,12 +42,29 @@ export default function App() {
   const [pasoForm, setPasoForm] = useState(1);
   const [registroAEditar, setRegistroAEditar] = useState(null);
   const [conductoresHoy, setConductoresHoy] = useState([]);
+  const [globalError, setGlobalError] = useState(null);
   
   // Navegación de vistas: 'analisis' o 'registro'
   const [vistaActiva, setVistaActiva] = useState('registro');
   
   // Mobile drawer
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
+
+  // Escuchar errores globales para depuración en celular
+  useEffect(() => {
+    const handleErr = (e) => {
+      setGlobalError(e.message || String(e));
+    };
+    const handleRej = (e) => {
+      setGlobalError(e.reason?.message || String(e.reason) || 'Error de red / Supabase');
+    };
+    window.addEventListener('error', handleErr);
+    window.addEventListener('unhandledrejection', handleRej);
+    return () => {
+      window.removeEventListener('error', handleErr);
+      window.removeEventListener('unhandledrejection', handleRej);
+    };
+  }, []);
 
   // Cargar datos operativos de la fecha
   const cargarDatos = async () => {
@@ -420,6 +437,16 @@ export default function App() {
         )}
 
       </main>
+
+      {globalError && (
+        <div className="fixed bottom-4 right-4 left-4 md:left-auto md:w-96 bg-red-900/95 text-white p-4 rounded-xl shadow-2xl border border-red-500 z-50 text-xs font-bold flex flex-col gap-2 backdrop-blur-sm animate-fade-in">
+          <div className="flex justify-between items-center">
+            <span>⚠️ Error en Celular / Red:</span>
+            <button onClick={() => setGlobalError(null)} className="px-2 py-0.5 bg-red-800 hover:bg-red-700 rounded text-[10px] font-black uppercase cursor-pointer">Cerrar</button>
+          </div>
+          <p className="font-mono bg-red-950/40 p-2 rounded max-h-32 overflow-y-auto break-words">{globalError}</p>
+        </div>
+      )}
 
     </div>
   );

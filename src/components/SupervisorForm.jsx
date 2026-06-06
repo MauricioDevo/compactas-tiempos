@@ -74,8 +74,12 @@ export default function SupervisorForm({
 
   useEffect(() => {
     const cargarConductoresGlobales = async () => {
-      const data = await getDrivers();
-      setTodosLosConductores(data);
+      try {
+        const data = await getDrivers();
+        setTodosLosConductores(data);
+      } catch (err) {
+        console.error('Error al cargar conductores globales:', err);
+      }
     };
     cargarConductoresGlobales();
   }, []);
@@ -96,12 +100,16 @@ export default function SupervisorForm({
   useEffect(() => {
     if (fecha) {
       const cargarActivos = async () => {
-        const activos = await getActiveDriversForDate(fecha);
-        setConductoresActivosDia(activos);
-        
-        // Pre-cargar la caja de asistencia masiva si ya hay activos
-        if (activos.length > 0 && paso === 2) {
-          setAsistenciaInput(activos.map(a => a.nombre).join(', '));
+        try {
+          const activos = await getActiveDriversForDate(fecha);
+          setConductoresActivosDia(activos);
+          
+          // Pre-cargar la caja de asistencia masiva si ya hay activos
+          if (activos.length > 0 && paso === 2) {
+            setAsistenciaInput(activos.map(a => a.nombre).join(', '));
+          }
+        } catch (err) {
+          console.error('Error al cargar conductores activos:', err);
         }
       };
       cargarActivos();
@@ -139,12 +147,16 @@ export default function SupervisorForm({
       onDateChange(fecha);
     }
 
-    // Cargar asistencia si ya existe para esta fecha
-    const activos = await getActiveDriversForDate(fecha);
-    setConductoresActivosDia(activos);
-    setAsistenciaInput(activos.map(a => a.nombre).join(', '));
-
-    cambiarPaso(2);
+    try {
+      // Cargar asistencia si ya existe para esta fecha
+      const activos = await getActiveDriversForDate(fecha);
+      setConductoresActivosDia(activos);
+      setAsistenciaInput(activos.map(a => a.nombre).join(', '));
+      cambiarPaso(2);
+    } catch (err) {
+      console.error('Error al iniciar jornada:', err);
+      setErrorMsg('Error al conectar con la base de datos de Supabase. Revisa tu conexión.');
+    }
   };
 
   // PASO 2 -> PASO 3 (Guardado masivo de asistencia)

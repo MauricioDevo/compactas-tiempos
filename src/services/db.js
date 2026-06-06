@@ -13,11 +13,27 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.en
 // Verificar si Supabase está configurado
 const isSupabaseConfigured = supabaseUrl.trim() !== '' && supabaseAnonKey.trim() !== '';
 
-export const supabase = isSupabaseConfigured ? createClient(supabaseUrl, supabaseAnonKey) : null;
+let supabaseClient = null;
+let isConfiguredSuccessfully = false;
 
 if (isSupabaseConfigured) {
-  console.log('🔌 Conectado a la base de datos de Supabase en tiempo real.');
-} else {
+  try {
+    // Limpiar URL por si tiene espacios en blanco al inicio o al final
+    const cleanUrl = supabaseUrl.trim();
+    const cleanKey = supabaseAnonKey.trim();
+    supabaseClient = createClient(cleanUrl, cleanKey);
+    isConfiguredSuccessfully = true;
+    console.log('🔌 Conectado a la base de datos de Supabase en tiempo real.');
+  } catch (error) {
+    console.error('❌ Error al inicializar el cliente de Supabase:', error);
+    supabaseClient = null;
+    isConfiguredSuccessfully = false;
+  }
+}
+
+export const supabase = supabaseClient;
+
+if (!isConfiguredSuccessfully) {
   console.log('📁 Utilizando base de datos local del navegador (LocalStorage).');
 }
 

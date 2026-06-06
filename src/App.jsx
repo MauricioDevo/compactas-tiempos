@@ -51,10 +51,14 @@ export default function App() {
 
   // Cargar datos operativos de la fecha
   const cargarDatos = async () => {
-    const data = await getRecords(fechaSeleccionada);
-    setRegistros(data);
-    const activos = await getActiveDriversForDate(fechaSeleccionada);
-    setConductoresHoy(activos);
+    try {
+      const data = await getRecords(fechaSeleccionada);
+      setRegistros(data);
+      const activos = await getActiveDriversForDate(fechaSeleccionada);
+      setConductoresHoy(activos);
+    } catch (error) {
+      console.error('Error al cargar datos operativos:', error);
+    }
   };
 
 

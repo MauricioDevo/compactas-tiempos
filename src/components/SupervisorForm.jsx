@@ -295,41 +295,41 @@ export default function SupervisorForm({
   };
 
   return (
-    <div className="bg-slate-900 rounded-2xl border-2 border-slate-800 shadow-xl overflow-hidden min-h-[500px] flex flex-col">
+    <div className="bg-slate-900 rounded-2xl border-2 border-slate-800 shadow-xl overflow-hidden min-h-[450px] flex flex-col">
       
       {/* ----------------- PASO 1: CONFIGURAR JORNADA ----------------- */}
       {paso === 1 && (
-        <form onSubmit={handleSiguientePaso1} className="p-6 flex flex-col justify-between flex-1 gap-6">
-          <div className="flex flex-col gap-5">
-            <div className="border-b-2 border-slate-800 pb-3">
-              <h2 className="text-2xl font-black text-white flex items-center gap-2">
-                <Calendar className="text-indigo-400 w-7 h-7" />
+        <form onSubmit={handleSiguientePaso1} className="p-4 sm:p-6 flex flex-col justify-between flex-1 gap-5">
+          <div className="flex flex-col gap-4">
+            <div className="border-b-2 border-slate-800 pb-2.5">
+              <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+                <Calendar className="text-indigo-400 w-6 h-6 sm:w-7 sm:h-7" />
                 Iniciar Registro Diario
               </h2>
-              <p className="text-slate-400 text-sm mt-1">
+              <p className="text-slate-400 text-xs sm:text-sm mt-1">
                 Selecciona la fecha de la jornada y escribe tu nombre de supervisor.
               </p>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3.5">
               <div>
-                <label className="text-base font-bold text-slate-200 block mb-2">
+                <label className="text-sm sm:text-base font-bold text-slate-200 block mb-1.5">
                   Fecha de la Jornada (Día Operativo):
                 </label>
                 <input 
                   type="date"
                   value={fecha}
                   onChange={(e) => setFecha(e.target.value)}
-                  className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-4 py-4 text-lg font-black text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-3.5 py-3 text-base sm:text-lg font-black text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
                   required
                 />
-                <span className="text-xs text-slate-550 font-bold mt-1.5 block">
+                <span className="text-[10px] sm:text-xs text-slate-550 font-bold mt-1 block">
                   * Nota: Si vas a registrar la jornada de ayer, selecciona la fecha de ayer.
                 </span>
               </div>
 
               <div>
-                <label className="text-base font-bold text-slate-200 block mb-2">
+                <label className="text-sm sm:text-base font-bold text-slate-200 block mb-1.5">
                   Tu Nombre (Supervisor):
                 </label>
                 <input 
@@ -337,22 +337,22 @@ export default function SupervisorForm({
                   value={supervisor}
                   onChange={(e) => setSupervisor(e.target.value)}
                   placeholder="Escribe tu nombre"
-                  className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-4 py-4 text-lg font-black text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-3.5 py-3 text-base sm:text-lg font-black text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500"
                   required
                 />
               </div>
             </div>
 
             {errorMsg && (
-              <div className="bg-red-950/45 border-2 border-red-500/30 text-red-200 p-3 rounded-xl text-sm font-bold flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5" /> {errorMsg}
+              <div className="bg-red-950/45 border-2 border-red-500/30 text-red-200 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2">
+                <AlertTriangle className="w-4.5 h-4.5 shrink-0" /> {errorMsg}
               </div>
             )}
           </div>
 
           <button
             type="submit"
-            className="w-full py-4.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-lg font-black shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all cursor-pointer mt-4"
+            className="w-full py-3.5 sm:py-4.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-base sm:text-lg font-black shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all cursor-pointer mt-3"
           >
             Siguiente: Registrar Conductores <ChevronRight className="w-5 h-5" />
           </button>
@@ -361,57 +361,57 @@ export default function SupervisorForm({
 
       {/* ----------------- PASO 2: ASISTENCIA MASIVA DE CONDUCTORES ----------------- */}
       {paso === 2 && (
-        <form onSubmit={handleGuardarAsistenciaMasiva} className="p-6 flex flex-col justify-between flex-1 gap-6">
-          <div className="flex flex-col gap-5">
+        <form onSubmit={handleGuardarAsistenciaMasiva} className="p-4 sm:p-6 flex flex-col justify-between flex-1 gap-5">
+          <div className="flex flex-col gap-4">
             
-            <div className="flex items-center justify-between border-b-2 border-slate-800 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-slate-800 pb-2.5 gap-2">
               <div>
                 <span className="text-[10px] bg-slate-950 border border-slate-800 px-2 py-0.5 rounded font-black text-indigo-400">
                   Fecha: {fecha}
                 </span>
-                <h2 className="text-xl font-black text-white mt-1.5 flex items-center gap-2">
-                  <Users className="text-indigo-400 w-6 h-6" />
+                <h2 className="text-lg sm:text-xl font-black text-white mt-1 flex items-center gap-2">
+                  <Users className="text-indigo-400 w-5 h-5 sm:w-6 sm:h-6" />
                   Ingreso Masivo de Conductores
                 </h2>
               </div>
               <button 
                 type="button"
                 onClick={() => setPaso(1)}
-                className="text-xs text-slate-400 font-bold border-2 border-slate-800 px-3 py-1.5 rounded-lg hover:bg-slate-850"
+                className="text-[10px] sm:text-xs text-slate-400 font-bold border-2 border-slate-800 px-2.5 py-1.5 rounded-lg hover:bg-slate-850 self-start sm:self-auto"
               >
                 ← Volver al Paso 1
               </button>
             </div>
 
-            <p className="text-slate-450 text-xs font-semibold leading-relaxed">
+            <p className="text-slate-450 text-[11px] sm:text-xs font-semibold leading-relaxed">
               Escribe o pega los nombres de los conductores que asistieron en esta jornada. 
               Sepáralos usando **comas** o **saltos de línea**.
             </p>
 
             <div>
-              <label className="text-sm font-bold text-slate-350 block mb-2">
+              <label className="text-xs sm:text-sm font-bold text-slate-350 block mb-1.5">
                 Lista de Conductores Asistentes:
               </label>
               <textarea
                 value={asistenciaInput}
                 onChange={(e) => setAsistenciaInput(e.target.value)}
                 placeholder="Ej. Paola Tesen, Jesus Laban, Carlos Flores, Juan Quispe"
-                rows={6}
-                className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-4 py-4 text-base font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 resize-none"
+                rows={4}
+                className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-3 py-3 text-sm sm:px-4 sm:py-4 sm:text-base font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 resize-none"
                 required
               />
-              <span className="text-[11px] text-slate-500 font-bold mt-1.5 block">
+              <span className="text-[10px] sm:text-[11px] text-slate-500 font-bold mt-1 block">
                 * Esto creará el catálogo del día y facilitará la escritura de horarios en las compactas.
               </span>
             </div>
 
             {/* Vista Previa Rápida de Códigos */}
             {asistenciaInput.trim() && (
-              <div className="bg-slate-950/40 border border-slate-800 rounded-xl p-3">
-                <span className="text-[10px] font-black text-slate-550 uppercase block mb-1.5">Vista Previa de Códigos:</span>
-                <div className="flex flex-wrap gap-1.5 max-h-[80px] overflow-y-auto pr-1">
+              <div className="bg-slate-950/40 border border-slate-800 rounded-xl p-2.5">
+                <span className="text-[9px] sm:text-[10px] font-black text-slate-550 uppercase block mb-1">Vista Previa de Códigos:</span>
+                <div className="flex flex-wrap gap-1 max-h-[70px] overflow-y-auto pr-1">
                   {asistenciaInput.split(/[\n,]+/).map(n => n.trim()).filter(Boolean).map((nombre, idx) => (
-                    <span key={idx} className="text-[10px] bg-slate-900 border border-slate-800 text-slate-350 px-2 py-0.5 rounded">
+                    <span key={idx} className="text-[9px] sm:text-[10px] bg-slate-900 border border-slate-800 text-slate-350 px-2 py-0.5 rounded">
                       {nombre}
                     </span>
                   ))}
@@ -420,14 +420,14 @@ export default function SupervisorForm({
             )}
 
             {errorMsg && (
-              <div className="bg-red-950/45 border-2 border-red-500/30 text-red-200 p-3 rounded-xl text-sm font-bold flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5" /> {errorMsg}
+              <div className="bg-red-950/45 border-2 border-red-500/30 text-red-200 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2">
+                <AlertTriangle className="w-4.5 h-4.5 shrink-0" /> {errorMsg}
               </div>
             )}
 
             {successMsg && (
-              <div className="bg-emerald-950/45 border-2 border-emerald-500/30 text-emerald-250 p-3 rounded-xl text-sm font-bold flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5" /> {successMsg}
+              <div className="bg-emerald-950/45 border-2 border-emerald-500/30 text-emerald-250 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2">
+                <CheckCircle2 className="w-4.5 h-4.5 shrink-0" /> {successMsg}
               </div>
             )}
 
@@ -435,7 +435,7 @@ export default function SupervisorForm({
 
           <button
             type="submit"
-            className="w-full py-4.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-lg font-black shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all cursor-pointer mt-4"
+            className="w-full py-3.5 sm:py-4.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-base sm:text-lg font-black shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all cursor-pointer mt-3"
           >
             Confirmar Asistencia y Seleccionar Compactas <ChevronRight className="w-5 h-5" />
           </button>
@@ -444,52 +444,55 @@ export default function SupervisorForm({
 
       {/* ----------------- PASO 3: TABLERO DE PLACAS ----------------- */}
       {paso === 3 && (
-        <div className="p-6 flex flex-col justify-between flex-1 gap-6">
+        <form onSubmit={(e) => e.preventDefault()} className="p-4 sm:p-6 flex flex-col justify-between flex-1 gap-5">
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b-2 border-slate-800 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-slate-800 pb-2.5 gap-2">
               <div>
                 <span className="text-[10px] bg-indigo-600 text-white font-black px-2.5 py-0.5 rounded uppercase">
                   Supervisor: {supervisor}
                 </span>
-                <h2 className="text-xl font-black text-white mt-1.5">
+                <h2 className="text-lg sm:text-xl font-black text-white mt-1">
                   Selecciona la Compacta a registrar:
                 </h2>
               </div>
               <div className="flex gap-2">
                 <button 
+                  type="button"
                   onClick={() => setPaso(2)}
-                  className="text-xs text-slate-400 font-bold border-2 border-slate-800 px-3 py-1.5 rounded-lg hover:bg-slate-850"
+                  className="text-[10px] sm:text-xs text-slate-400 font-bold border-2 border-slate-800 px-2.5 py-1.5 rounded-lg hover:bg-slate-850"
                 >
                   ← Editar Asistencia
                 </button>
                 <button 
+                  type="button"
                   onClick={() => setPaso(1)}
-                  className="text-xs text-slate-400 font-bold border-2 border-slate-800 px-3 py-1.5 rounded-lg hover:bg-slate-850"
+                  className="text-[10px] sm:text-xs text-slate-400 font-bold border-2 border-slate-800 px-2.5 py-1.5 rounded-lg hover:bg-slate-850"
                 >
                   ← Cambiar Día
                 </button>
               </div>
             </div>
 
-            <p className="text-slate-400 text-xs font-semibold">
+            <p className="text-slate-400 text-[11px] sm:text-xs font-semibold">
               Jornada seleccionada: <span className="text-slate-200 font-black">{fecha}</span>. 
               Asistencia hoy: <span className="text-indigo-400 font-bold">{conductoresActivosDia.length} conductores</span>.
             </p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mt-1">
               {PLACAS_PRECONFIGURADAS.map((placa) => {
                 const count = obtenerCantidadSegmentos(placa);
                 return (
                   <button
                     key={placa}
+                    type="button"
                     onClick={() => abrirRegistroVehiculo(placa)}
-                    className="flex flex-col items-center justify-center p-5 bg-slate-950/70 border-2 border-slate-800 hover:border-indigo-500 rounded-2xl hover:bg-slate-900 transition-all cursor-pointer group active:scale-[0.98]"
+                    className="flex flex-col items-center justify-center p-3.5 sm:p-5 bg-slate-950/70 border-2 border-slate-800 hover:border-indigo-500 rounded-xl sm:rounded-2xl hover:bg-slate-900 transition-all cursor-pointer group active:scale-[0.98]"
                   >
-                    <Truck className="text-slate-500 group-hover:text-indigo-400 w-8 h-8 mb-2 transition-colors" />
-                    <span className="text-lg font-black text-white group-hover:text-indigo-300 transition-colors">
+                    <Truck className="text-slate-500 group-hover:text-indigo-400 w-6 h-6 sm:w-8 sm:h-8 mb-1.5 sm:mb-2 transition-colors" />
+                    <span className="text-sm sm:text-lg font-black text-white group-hover:text-indigo-300 transition-colors">
                       {placa}
                     </span>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full mt-1.5 ${
+                    <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full mt-1.5 ${
                       count > 0 ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-900 text-slate-500'
                     }`}>
                       {count === 1 ? '1 tiempo' : `${count} tiempos`}
@@ -500,50 +503,50 @@ export default function SupervisorForm({
             </div>
           </div>
           
-          <div className="text-center text-xs text-slate-500 font-semibold border-t border-slate-850 pt-4 mt-2">
+          <div className="text-center text-[10px] sm:text-xs text-slate-500 font-semibold border-t border-slate-850 pt-3 mt-1">
             Selecciona una placa para ver sus tiempos actuales o ingresar nuevos movimientos.
           </div>
-        </div>
+        </form>
       )}
 
       {/* ----------------- PASO 4: REGISTRO DE TIEMPOS POR PLACA ----------------- */}
       {paso === 4 && (
-        <div className="p-6 flex flex-col justify-between flex-1 gap-6">
+        <div className="p-4 sm:p-6 flex flex-col justify-between flex-1 gap-5">
           <div className="flex flex-col gap-4">
             
             {/* Header de Placa */}
-            <div className="flex items-center justify-between border-b-2 border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b-2 border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setPaso(3)}
-                  className="p-1.5 bg-slate-950 border border-slate-800 rounded-xl hover:bg-slate-850 text-slate-400 hover:text-white"
+                  className="p-1.5 bg-slate-950 border border-slate-800 rounded-xl hover:bg-slate-850 text-slate-400 hover:text-white cursor-pointer"
                 >
-                  <ArrowLeft className="w-5 h-5" />
+                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 <div>
-                  <span className="text-[10px] bg-slate-950 border border-slate-800 px-2 py-0.5 rounded font-black text-indigo-400">
+                  <span className="text-[9px] sm:text-[10px] bg-slate-950 border border-slate-800 px-2 py-0.5 rounded font-black text-indigo-400">
                     Compacta: {placaSeleccionada}
                   </span>
-                  <h2 className="text-lg font-black text-white mt-1.5">Llenar Horario de Compacta</h2>
+                  <h2 className="text-sm sm:text-lg font-black text-white mt-1">Llenar Horario</h2>
                 </div>
               </div>
               
-              <div className="text-right text-xs">
-                <p className="text-slate-500 font-bold uppercase">Fecha Operación</p>
+              <div className="text-right text-[10px] sm:text-xs">
+                <p className="text-slate-550 font-bold uppercase">Fecha Operación</p>
                 <p className="text-slate-200 font-extrabold">{fecha}</p>
               </div>
             </div>
 
             {/* DOS COLUMNAS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start mt-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start mt-1">
               
               {/* Formulario de Adición */}
-              <form onSubmit={handleGuardarSegmento} className="flex flex-col gap-4">
+              <form onSubmit={handleGuardarSegmento} className="flex flex-col gap-3.5">
                 
-                {/* Input de Texto con Autocompletado FILTRADO POR LA ASISTENCIA DEL DIA */}
+                {/* Input de Texto con Autocompletado */}
                 <div>
-                  <label className="text-sm font-bold text-slate-350 block mb-1">
-                    Digita el Nombre del Conductor:
+                  <label className="text-xs sm:text-sm font-bold text-slate-350 block mb-1">
+                    Conductor:
                   </label>
                   <input
                     type="text"
@@ -551,60 +554,59 @@ export default function SupervisorForm({
                     value={conductorNombreInput}
                     onChange={(e) => setConductorNombreInput(e.target.value)}
                     placeholder="Escribe el nombre del conductor"
-                    className="w-full bg-slate-950 border-2 border-slate-700/85 rounded-xl px-3.5 py-3.5 text-base font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-950 border-2 border-slate-700/85 rounded-xl px-3 py-2.5 text-sm sm:text-base font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500"
                     required
                     autoFocus
                   />
                   
-                  {/* Sugerir únicamente los que asistieron hoy para evitar errores */}
                   <datalist id="conductores-asistieron-dia">
                     {conductoresActivosDia.map(c => (
                       <option key={c.id} value={c.nombre} />
                     ))}
                   </datalist>
-                  <span className="text-[10px] text-indigo-400 font-bold mt-1.5 block">
-                    * Sugiriendo conductores asistentes de hoy ({conductoresActivosDia.length} en total).
+                  <span className="text-[9px] sm:text-[10px] text-indigo-400 font-bold mt-1 block">
+                    * Sugiriendo conductores del día ({conductoresActivosDia.length} en total).
                   </span>
                 </div>
 
                 {/* Actividad / Fase */}
                 <div>
-                  <label className="text-sm font-bold text-slate-350 block mb-1.5">
+                  <label className="text-xs sm:text-sm font-bold text-slate-350 block mb-1.5">
                     Actividad / Fase:
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2.5">
                     <button
                       type="button"
                       onClick={() => setFase('emmsa')}
-                      className={`py-3.5 rounded-xl border-2 text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      className={`py-2.5 sm:py-3.5 rounded-xl border-2 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 ${
                         fase === 'emmsa'
-                          ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 font-black shadow-lg shadow-emerald-500/5'
+                          ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 font-black shadow-lg'
                           : 'border-slate-800 hover:border-slate-700 bg-slate-950/50 text-slate-500'
                       }`}
                     >
-                      <span className={`w-2 h-2 rounded-full block ${fase === 'emmsa' ? 'bg-emerald-500' : 'bg-slate-700'}`}></span>
+                      <span className={`w-1.5 h-1.5 rounded-full block ${fase === 'emmsa' ? 'bg-emerald-500' : 'bg-slate-700'}`}></span>
                       🟢 EMMSA (Carga)
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setFase('viaje')}
-                      className={`py-3.5 rounded-xl border-2 text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      className={`py-2.5 sm:py-3.5 rounded-xl border-2 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 ${
                         fase === 'viaje'
-                          ? 'bg-orange-500/15 border-orange-500 text-orange-300 font-black shadow-lg shadow-orange-500/5'
+                          ? 'bg-orange-500/15 border-orange-500 text-orange-300 font-black shadow-lg'
                           : 'border-slate-800 hover:border-slate-700 bg-slate-950/50 text-slate-500'
                       }`}
                     >
-                      <span className={`w-2 h-2 rounded-full block ${fase === 'viaje' ? 'bg-orange-500' : 'bg-slate-700'}`}></span>
+                      <span className={`w-1.5 h-1.5 rounded-full block ${fase === 'viaje' ? 'bg-orange-500' : 'bg-slate-700'}`}></span>
                       🟠 Viaje Relleno
                     </button>
                   </div>
                 </div>
 
                 {/* Horas */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3.5">
                   <div>
-                    <label className="text-xs font-bold text-slate-350 block mb-1">
+                    <label className="text-[10px] sm:text-xs font-bold text-slate-350 block mb-1">
                       Hora Inicio:
                     </label>
                     <div className="flex gap-1">
@@ -612,13 +614,13 @@ export default function SupervisorForm({
                         type="time"
                         value={horaInicio}
                         onChange={(e) => setHoraInicio(e.target.value)}
-                        className="flex-1 bg-slate-950 border-2 border-slate-700/60 rounded-xl px-2 py-3 text-lg font-black text-white focus:outline-none"
+                        className="flex-1 bg-slate-950 border-2 border-slate-700/60 rounded-xl px-2 py-2 text-xs sm:text-lg sm:py-3 sm:px-3 font-black text-white focus:outline-none"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => establecerHoraActual(setHoraInicio)}
-                        className="px-2.5 bg-slate-800 border-2 border-slate-700 rounded-xl text-xs font-bold text-slate-400 active:scale-95"
+                        className="px-2 bg-slate-850 border-2 border-slate-750 rounded-xl text-[10px] font-bold text-slate-400 active:scale-95 cursor-pointer"
                       >
                         Ahora
                       </button>
@@ -626,7 +628,7 @@ export default function SupervisorForm({
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-350 block mb-1">
+                    <label className="text-[10px] sm:text-xs font-bold text-slate-350 block mb-1">
                       Hora Término:
                     </label>
                     <div className="flex gap-1">
@@ -634,13 +636,13 @@ export default function SupervisorForm({
                         type="time"
                         value={horaTermino}
                         onChange={(e) => setHoraTermino(e.target.value)}
-                        className="flex-1 bg-slate-950 border-2 border-slate-700/60 rounded-xl px-2 py-3 text-lg font-black text-white focus:outline-none"
+                        className="flex-1 bg-slate-950 border-2 border-slate-700/60 rounded-xl px-2 py-2 text-xs sm:text-lg sm:py-3 sm:px-3 font-black text-white focus:outline-none"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => establecerHoraActual(setHoraTermino)}
-                        className="px-2.5 bg-slate-800 border-2 border-slate-700 rounded-xl text-xs font-bold text-slate-400 active:scale-95"
+                        className="px-2 bg-slate-850 border-2 border-slate-750 rounded-xl text-[10px] font-bold text-slate-400 active:scale-95 cursor-pointer"
                       >
                         Ahora
                       </button>
@@ -650,32 +652,32 @@ export default function SupervisorForm({
 
                 {/* Feedback */}
                 {errorMsg && (
-                  <div className="bg-red-950/45 border-2 border-red-500/30 text-red-200 p-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                    <AlertTriangle className="w-4.5 h-4.5 shrink-0 text-red-400" />
+                  <div className="bg-red-950/45 border-2 border-red-500/30 text-red-200 p-2 rounded-xl text-xs font-bold flex items-center gap-1.5 animate-pulse">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-red-400" />
                     <span>{errorMsg}</span>
                   </div>
                 )}
 
                 {successMsg && (
-                  <div className="bg-emerald-950/45 border-2 border-emerald-500/30 text-emerald-250 p-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4.5 h-4.5 shrink-0 text-emerald-400" />
+                  <div className="bg-emerald-950/45 border-2 border-emerald-500/30 text-emerald-250 p-2 rounded-xl text-xs font-bold flex items-center gap-1.5 animate-pulse">
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
                     <span>{successMsg}</span>
                   </div>
                 )}
 
                 {/* Botón Guardar */}
-                <div className="flex gap-3 mt-1 w-full">
+                <div className="flex gap-2.5 mt-1 w-full">
                   <button
                     type="submit"
-                    className="flex-1 py-4 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 active:scale-[0.98] rounded-xl text-white text-base font-black shadow-md shadow-indigo-600/10 cursor-pointer transition-all"
+                    className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 active:scale-[0.98] rounded-xl text-white text-sm sm:text-base font-black shadow-md shadow-indigo-600/10 cursor-pointer transition-all"
                   >
-                    {registroAEditar ? 'Guardar Cambios' : `+ Añadir Tiempo a ${placaSeleccionada}`}
+                    {registroAEditar ? 'Guardar Cambios' : `+ Añadir Tiempo`}
                   </button>
                   {registroAEditar && (
                     <button
                       type="button"
                       onClick={handleCancelarEdicion}
-                      className="px-5 py-4 bg-slate-800 hover:bg-slate-750 active:scale-[0.98] rounded-xl text-slate-300 text-base font-black border border-slate-700/50 transition-all cursor-pointer"
+                      className="px-4 py-3 bg-slate-800 hover:bg-slate-750 active:scale-[0.98] rounded-xl text-slate-350 text-sm font-black border border-slate-700/50 transition-all cursor-pointer"
                     >
                       Cancelar
                     </button>
@@ -685,12 +687,12 @@ export default function SupervisorForm({
               </form>
 
               {/* Lista de segmentos */}
-              <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-850/80 h-full flex flex-col gap-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-800 pb-1.5">
+              <div className="bg-slate-950/50 p-3.5 rounded-xl border border-slate-850/80 h-full flex flex-col gap-2.5">
+                <h4 className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-800 pb-1.5">
                   Tiempos Registrados Hoy ({registrosPlaca.length}):
                 </h4>
                 
-                <div className="flex flex-col gap-2 overflow-y-auto max-h-[220px] pr-1">
+                <div className="flex flex-col gap-2 overflow-y-auto max-h-[180px] pr-1">
                   {registrosPlaca.length > 0 ? (
                     registrosPlaca.map((segmento) => {
                       const cond = todosLosConductores.find(c => c.id === segmento.conductor_id) || { nombre: segmento.conductor_id, codigo: '?' };
@@ -699,19 +701,19 @@ export default function SupervisorForm({
                       return (
                         <div 
                           key={segmento.id}
-                          className={`flex items-center justify-between p-3 border-2 rounded-xl text-xs font-bold ${
+                          className={`flex items-center justify-between p-2.5 border rounded-xl text-[11px] sm:text-xs font-bold ${
                             esEmmsa 
                               ? 'bg-emerald-950/20 border-emerald-500/20 text-emerald-300' 
                               : 'bg-orange-950/20 border-orange-500/20 text-orange-300'
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full block bg-current animate-pulse"></span>
-                            <span className="text-slate-100 font-extrabold text-sm">
+                            <span className="w-2 h-2 rounded-full block bg-current"></span>
+                            <span className="text-slate-100 font-extrabold text-xs sm:text-sm">
                               {segmento.hora_inicio} - {segmento.hora_termino}
                             </span>
                             <span className="text-slate-650">|</span>
-                            <span className="text-slate-205">{cond.nombre} ({cond.codigo})</span>
+                            <span className="text-slate-300 truncate max-w-[100px] sm:max-w-none">{cond.nombre}</span>
                           </div>
 
                           <button
@@ -720,13 +722,13 @@ export default function SupervisorForm({
                             className="p-1 text-slate-500 hover:text-red-400 transition-colors cursor-pointer"
                             title="Eliminar tiempo"
                           >
-                            <Trash2 className="w-4.5 h-4.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       );
                     })
                   ) : (
-                    <p className="text-xs text-slate-650 italic text-center py-8">
+                    <p className="text-[11px] text-slate-600 italic text-center py-6">
                       Sin tiempos registrados hoy.
                     </p>
                   )}
@@ -740,7 +742,7 @@ export default function SupervisorForm({
           {/* Botón Volver al Tablero */}
           <button
             onClick={() => setPaso(3)}
-            className="w-full mt-auto py-3.5 bg-slate-800 hover:bg-slate-750 text-slate-300 text-sm font-bold border-t border-slate-750/50 cursor-pointer"
+            className="w-full mt-auto py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs sm:text-sm font-bold border-t border-slate-750/50 cursor-pointer rounded-xl"
           >
             ← Volver al Listado de Placas
           </button>

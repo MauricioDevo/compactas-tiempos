@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getDrivers, deleteRecord, getMinutesFromTime, formatMinutesToTime } from '../services/db';
+import { getDrivers, saveRecord, deleteRecord, getMinutesFromTime, formatMinutesToTime } from '../services/db';
 import { Clock, Edit2, Trash2, Calendar, ZoomIn, ZoomOut } from 'lucide-react';
 
 
@@ -12,7 +12,14 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
   const [conductores, setConductores] = useState([]);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [nowPercent, setNowPercent] = useState(-1);
+  const [observacionInput, setObservacionInput] = useState('');
   const chartContainerRef = useRef(null);
+
+  useEffect(() => {
+    if (activeTooltip) {
+      setObservacionInput(activeTooltip.observaciones || '');
+    }
+  }, [activeTooltip]);
 
   useEffect(() => {
     const cargarConductores = async () => {
@@ -411,7 +418,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                           {/* Puntito indicador de Observaciones */}
                           {b.active && b.record && b.record.observaciones && (
                             <span 
-                              className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-white border border-slate-900 shadow-sm z-20"
+                              className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 border border-white shadow-sm z-20"
                               title={`Observación: ${b.record.observaciones}`}
                             />
                           )}
@@ -516,12 +523,38 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                 </div>
               )}
 
-              {activeTooltip.observaciones && (
-                <div className="col-span-2 border-t border-slate-850 pt-2.5">
-                  <p className="text-slate-550 mb-0.5 uppercase tracking-wider">Observaciones</p>
-                  <p className="text-slate-200 bg-slate-950 p-2.5 rounded-xl border border-slate-850 font-medium whitespace-pre-wrap">{activeTooltip.observaciones}</p>
+              <div className="col-span-2 border-t border-slate-850 pt-2.5 flex flex-col gap-1.5">
+                <p className="text-slate-550 mb-0.5 uppercase tracking-wider">Observaciones (Directo en Gráfico)</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={observacionInput}
+                    onChange={(e) => setObservacionInput(e.target.value)}
+                    placeholder="Sin observaciones. Escribe una aquí..."
+                    className="flex-1 bg-slate-950 border-2 border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const updatedRecord = {
+                          ...activeTooltip,
+                          observaciones: observacionInput.trim() || null
+                        };
+                        await saveRecord(updatedRecord);
+                        setActiveTooltip(updatedRecord);
+                        if (onDeleteRecord) onDeleteRecord(); // Recargar datos reactivos de App.jsx
+                        alert('Observación guardada.');
+                      } catch (error) {
+                        console.error('Error al guardar la observación:', error);
+                      }
+                    }}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-xs font-black rounded-xl cursor-pointer transition-all shadow-md shadow-indigo-600/10"
+                  >
+                    Guardar
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Acciones */}

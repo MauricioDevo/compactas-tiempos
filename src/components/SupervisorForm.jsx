@@ -50,9 +50,10 @@ export default function SupervisorForm({
   const [conductorNombreInput, setConductorNombreInput] = useState(''); // Nombre digitado en Paso 4
 
   // Formulario del segmento
-  const [fase, setFase] = useState('emmsa'); // 'emmsa' (Verde) o 'viaje' (Naranja)
+  const [fase, setFase] = useState('emmsa'); // 'emmsa' (Verde), 'viaje' (Naranja) o 'inoperativo' (Rojo)
   const [horaInicio, setHoraInicio] = useState('');
   const [horaTermino, setHoraTermino] = useState('');
+  const [observaciones, setObservaciones] = useState('');
 
   // Filtro de registros en base a la placa seleccionada (Derivado de props)
   const registrosPlaca = records.filter(r => r.placa === placaSeleccionada && r.fecha === fecha);
@@ -124,6 +125,7 @@ export default function SupervisorForm({
       setFase(registroAEditar.fase);
       setHoraInicio(registroAEditar.hora_inicio);
       setHoraTermino(registroAEditar.hora_termino);
+      setObservaciones(registroAEditar.observaciones || '');
       
       // Asegurar que navegamos a Paso 4 de la placa correcta
       setPlacaSeleccionada(registroAEditar.placa);
@@ -199,6 +201,7 @@ export default function SupervisorForm({
     setFase('emmsa');
     setHoraInicio('');
     setHoraTermino('');
+    setObservaciones('');
     setErrorMsg('');
     setSuccessMsg('');
     cambiarPaso(4);
@@ -216,6 +219,7 @@ export default function SupervisorForm({
     setFase('emmsa');
     setHoraInicio('');
     setHoraTermino('');
+    setObservaciones('');
     setErrorMsg('');
     setSuccessMsg('');
     if (onCancelEdit) onCancelEdit();
@@ -261,7 +265,8 @@ export default function SupervisorForm({
         fase,
         hora_inicio: horaInicio,
         hora_termino: horaTermino,
-        n_guia: 'G-DIARIA'
+        n_guia: 'G-DIARIA',
+        observaciones: observaciones.trim() || null
       };
 
       await saveRecord(recordData);
@@ -270,6 +275,7 @@ export default function SupervisorForm({
       setConductorNombreInput('');
       setHoraInicio('');
       setHoraTermino('');
+      setObservaciones('');
       
       if (registroAEditar && onCancelEdit) {
         onCancelEdit(); // Limpiar el estado de edición en el padre
@@ -574,31 +580,44 @@ export default function SupervisorForm({
                   <label className="text-xs sm:text-sm font-bold text-slate-350 block mb-1.5">
                     Actividad / Fase:
                   </label>
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-3 gap-2">
                     <button
                       type="button"
                       onClick={() => setFase('emmsa')}
-                      className={`py-2.5 sm:py-3.5 rounded-xl border-2 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 ${
+                      className={`py-2 sm:py-2.5 rounded-xl border-2 text-[10px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
                         fase === 'emmsa'
                           ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 font-black shadow-lg'
                           : 'border-slate-800 hover:border-slate-700 bg-slate-950/50 text-slate-500'
                       }`}
                     >
                       <span className={`w-1.5 h-1.5 rounded-full block ${fase === 'emmsa' ? 'bg-emerald-500' : 'bg-slate-700'}`}></span>
-                      🟢 EMMSA (Carga)
+                      🟢 EMMSA
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setFase('viaje')}
-                      className={`py-2.5 sm:py-3.5 rounded-xl border-2 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 ${
+                      className={`py-2 sm:py-2.5 rounded-xl border-2 text-[10px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
                         fase === 'viaje'
                           ? 'bg-orange-500/15 border-orange-500 text-orange-300 font-black shadow-lg'
                           : 'border-slate-800 hover:border-slate-700 bg-slate-950/50 text-slate-500'
                       }`}
                     >
                       <span className={`w-1.5 h-1.5 rounded-full block ${fase === 'viaje' ? 'bg-orange-500' : 'bg-slate-700'}`}></span>
-                      🟠 Viaje Relleno
+                      🟠 Viaje
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFase('inoperativo')}
+                      className={`py-2 sm:py-2.5 rounded-xl border-2 text-[10px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                        fase === 'inoperativo'
+                          ? 'bg-red-500/15 border-red-500 text-red-300 font-black shadow-lg shadow-red-500/5'
+                          : 'border-slate-800 hover:border-slate-700 bg-slate-950/50 text-slate-500'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full block ${fase === 'inoperativo' ? 'bg-red-500' : 'bg-slate-700'}`}></span>
+                      🔴 Inoperativo
                     </button>
                   </div>
                 </div>
@@ -648,6 +667,20 @@ export default function SupervisorForm({
                       </button>
                     </div>
                   </div>
+                </div>
+
+                {/* Observaciones */}
+                <div>
+                  <label className="text-xs sm:text-sm font-bold text-slate-350 block mb-1">
+                    Observaciones (Opcional):
+                  </label>
+                  <input
+                    type="text"
+                    value={observaciones}
+                    onChange={(e) => setObservaciones(e.target.value)}
+                    placeholder="Ej. Falla mecánica en alternador, cambio de llanta"
+                    className="w-full bg-slate-950 border-2 border-slate-700/85 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500"
+                  />
                 </div>
 
                 {/* Feedback */}

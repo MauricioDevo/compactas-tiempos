@@ -18,10 +18,11 @@ CREATE TABLE IF NOT EXISTS registros (
     supervisor TEXT NOT NULL,
     placa TEXT NOT NULL,
     conductor_id UUID REFERENCES conductores(id) ON DELETE CASCADE,
-    fase TEXT NOT NULL, -- 'emmsa' o 'viaje'
+    fase TEXT NOT NULL, -- 'emmsa', 'viaje' o 'inoperativo'
     hora_inicio TEXT NOT NULL,
     hora_termino TEXT NOT NULL,
     n_guia TEXT DEFAULT 'G-DIARIA',
+    observaciones TEXT,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

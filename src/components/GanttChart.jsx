@@ -12,51 +12,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
   const [conductores, setConductores] = useState([]);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [nowPercent, setNowPercent] = useState(-1);
-  const [zoom, setZoom] = useState(1.0); // Nivel de zoom de 1.0x a 2.5x
-  const [showCtrlHint, setShowCtrlHint] = useState(false);
   const chartContainerRef = useRef(null);
-
-  // Evento de rueda de mouse (wheel) para Zoom inteligente con Ctrl (o pinch-to-zoom en trackpads)
-  useEffect(() => {
-    const container = chartContainerRef.current;
-    if (!container) return;
-
-    const handleWheel = (e) => {
-      // Si se presiona la tecla Ctrl (o Cmd en macOS)
-      if (e.ctrlKey) {
-        e.preventDefault();
-        const delta = -e.deltaY;
-        setZoom((prevZoom) => {
-          // Ajustes finos de 0.1 en vez de 0.25 para un zoom más fluido con la rueda
-          let newZoom = prevZoom + (delta > 0 ? 0.1 : -0.1);
-          newZoom = Math.max(1.0, Math.min(2.5, newZoom));
-          return Math.round(newZoom * 10) / 10;
-        });
-        setShowCtrlHint(false);
-      } else {
-        // Si el usuario hace scroll vertical pero sobre el Gantt,
-        // le mostramos una pista de que puede hacer zoom con Ctrl + rueda.
-        if (Math.abs(e.deltaY) > 4) {
-          setShowCtrlHint(true);
-        }
-      }
-    };
-
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => {
-      container.removeEventListener('wheel', handleWheel);
-    };
-  }, []);
-
-  // Ocultar la pista de Ctrl después de 2 segundos
-  useEffect(() => {
-    if (showCtrlHint) {
-      const timer = setTimeout(() => {
-        setShowCtrlHint(false);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [showCtrlHint]);
 
   useEffect(() => {
     const cargarConductores = async () => {
@@ -65,6 +21,8 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
     };
     cargarConductores();
   }, [records]);
+
+
 
 
   // Indicador de hora actual en tiempo real para el día de hoy
@@ -176,32 +134,6 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
               className="bg-transparent border-none text-xs font-bold text-slate-200 focus:outline-none cursor-pointer"
             />
           </div>
-
-          {/* Controles de Zoom */}
-          <div className="flex items-center gap-1.5 bg-slate-950 border-2 border-slate-800 rounded-xl px-2.5 py-1.5 shadow-inner select-none shrink-0">
-            <span className="text-[10px] text-slate-550 font-extrabold uppercase pr-1.5 pl-0.5">Zoom:</span>
-            <button 
-              type="button"
-              onClick={() => setZoom(prev => Math.max(1.0, prev - 0.25))}
-              disabled={zoom <= 1.0}
-              className="p-1 bg-slate-900 border border-slate-800 hover:border-slate-750 disabled:opacity-35 disabled:pointer-events-none rounded-lg text-slate-400 hover:text-slate-200 transition-colors cursor-pointer active:scale-95"
-              title="Alejar Zoom"
-            >
-              <ZoomOut className="w-3.5 h-3.5" />
-            </button>
-            <span className="text-xs font-black text-indigo-400 w-12 text-center">
-              {Math.round(zoom * 100)}%
-            </span>
-            <button 
-              type="button"
-              onClick={() => setZoom(prev => Math.min(2.5, prev + 0.25))}
-              disabled={zoom >= 2.5}
-              className="p-1 bg-slate-900 border border-slate-800 hover:border-slate-750 disabled:opacity-35 disabled:pointer-events-none rounded-lg text-slate-400 hover:text-slate-200 transition-colors cursor-pointer active:scale-95"
-              title="Acercar Zoom"
-            >
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
-          </div>
         </div>
         
         {/* Leyenda */}
@@ -213,6 +145,10 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
           <div className="flex items-center gap-1.5">
             <span className="w-3.5 h-3.5 rounded bg-orange-500 border border-orange-400 block"></span>
             <span className="font-bold text-slate-350">Viaje Relleno (Naranja)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3.5 h-3.5 rounded bg-rose-600 border border-rose-500 block"></span>
+            <span className="font-bold text-slate-350">Inoperativo (Rojo)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3.5 h-3.5 rounded bg-emerald-500/10 border border-dashed border-emerald-500/30 block"></span>
@@ -237,8 +173,8 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
         className="overflow-x-auto min-w-full pb-4"
       >
         <div 
-          className="relative pr-2 transition-all duration-300 ease-out"
-          style={{ minWidth: `${zoom * 1600}px` }}
+          className="relative pr-2 transition-all duration-300"
+          style={{ minWidth: '1600px' }}
         >
           
           {/* EJE X */}
@@ -311,6 +247,19 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                     type: 'Viaje Relleno',
                     color: 'bg-orange-500/90 border-orange-450 shadow-orange-500/10 text-white',
                     label: `🟠 ${conductor.nombre}`,
+                    times: `${record.hora_inicio} - ${record.hora_termino}`,
+                    record,
+                    active: true
+                  });
+                }
+                if (record.fase === 'inoperativo') {
+                  activeBlocks.push({
+                    id: `${record.id}-inoperativo`,
+                    start: getMinutesFromTime(record.hora_inicio),
+                    end: getMinutesFromTime(record.hora_termino),
+                    type: 'Inoperativo',
+                    color: 'bg-rose-600/95 border-rose-500 shadow-rose-600/10 text-white',
+                    label: `🔴 Inop. ${conductor.nombre}`,
                     times: `${record.hora_inicio} - ${record.hora_termino}`,
                     record,
                     active: true
@@ -415,9 +364,8 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                       const leftPercent = (b.start / 1440) * 100;
                       let widthPercent = ((b.end - b.start) / 1440) * 100;
                       if (widthPercent <= 0) widthPercent = 2.5;
-
-                      // Calcular ancho real en píxeles según zoom
-                      const blockWidthPx = (widthPercent / 100) * (zoom * 1600);
+                      // Calcular ancho real en píxeles (basado en el ancho mínimo estático de 1600px)
+                      const blockWidthPx = (widthPercent / 100) * 1600;
                       // Mostrar texto si el bloque mide más de 45px reales
                       const mostrarTexto = b.active ? blockWidthPx > 45 : blockWidthPx > 85;
 
@@ -442,7 +390,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                           }}
                           title={
                             b.active 
-                              ? `Conductor ${getConductorInfo(b.record.conductor_id).nombre} (${b.type}): ${b.times}` 
+                              ? `Conductor ${getConductorInfo(b.record.conductor_id).nombre} (${b.type}): ${b.times}${b.record.observaciones ? ` - Obs: ${b.record.observaciones}` : ''}` 
                               : b.type === 'Tiempo Muerto'
                                 ? `Tiempo Muerto en EMMSA: ${b.times} (Excede 30 min)`
                                 : `Disponible en EMMSA: ${b.times}`
@@ -458,6 +406,14 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                             <span className="text-[9px] font-black opacity-90 hidden sm:inline truncate pl-1">
                               {b.times}
                             </span>
+                          )}
+
+                          {/* Puntito indicador de Observaciones */}
+                          {b.active && b.record && b.record.observaciones && (
+                            <span 
+                              className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-white border border-slate-900 shadow-sm z-20"
+                              title={`Observación: ${b.record.observaciones}`}
+                            />
                           )}
                         </div>
                       );
@@ -501,27 +457,31 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
             {/* Grid de Tiempos y Datos */}
             <div className="grid grid-cols-2 gap-4 bg-slate-950/50 p-4 rounded-xl border border-slate-850 text-xs font-bold">
               <div>
-                <p className="text-slate-500 uppercase tracking-wider mb-0.5">Supervisor</p>
+                <p className="text-slate-550 uppercase tracking-wider mb-0.5">Supervisor</p>
                 <p className="text-base text-slate-200">{activeTooltip.supervisor}</p>
               </div>
               <div>
-                <p className="text-slate-500 uppercase tracking-wider mb-0.5">Fecha Operación</p>
+                <p className="text-slate-550 uppercase tracking-wider mb-0.5">Fecha Operación</p>
                 <p className="text-base text-slate-200">{activeTooltip.fecha}</p>
               </div>
-              
+
               <div className="col-span-2 border-t border-slate-850 pt-2.5">
                 <p className={`font-extrabold flex items-center gap-1.5 mb-1.5 uppercase tracking-wider ${
-                  activeTooltip.fase === 'emmsa' ? 'text-emerald-400' : 'text-orange-400'
+                  activeTooltip.fase === 'emmsa' ? 'text-emerald-400' : activeTooltip.fase === 'viaje' ? 'text-orange-400' : 'text-rose-400'
                 }`}>
-                  {activeTooltip.fase === 'emmsa' ? '🟢 Trabajo en EMMSA' : '🟠 Viaje al Relleno / Petramás'}
+                  {activeTooltip.fase === 'emmsa' 
+                    ? '🟢 Trabajo en EMMSA' 
+                    : activeTooltip.fase === 'viaje' 
+                      ? '🟠 Viaje al Relleno / Petramás' 
+                      : '🔴 Vehículo Inoperativo'}
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <p className="text-slate-500 mb-0.5">Hora Inicio</p>
+                    <p className="text-slate-550 mb-0.5">Hora Inicio</p>
                     <p className="text-sm text-slate-200">{activeTooltip.hora_inicio}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500 mb-0.5">Hora Término</p>
+                    <p className="text-slate-550 mb-0.5">Hora Término</p>
                     <p className="text-sm text-slate-200">{activeTooltip.hora_termino}</p>
                   </div>
                 </div>
@@ -531,28 +491,35 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                 <div className="col-span-2 border-t border-slate-850 pt-2.5 grid grid-cols-2 gap-y-2">
                   {activeTooltip.ticket_ingreso && (
                     <div>
-                      <p className="text-slate-500 mb-0.5">Tkt Ingreso</p>
+                      <p className="text-slate-550 mb-0.5">Tkt Ingreso</p>
                       <p className="text-slate-200">{activeTooltip.ticket_ingreso}</p>
                     </div>
                   )}
                   {activeTooltip.ticket_salida && (
                     <div>
-                      <p className="text-slate-500 mb-0.5">Tkt Salida</p>
+                      <p className="text-slate-550 mb-0.5">Tkt Salida</p>
                       <p className="text-slate-200">{activeTooltip.ticket_salida}</p>
                     </div>
                   )}
                   {activeTooltip.peso_emmsa && (
                     <div>
-                      <p className="text-slate-500 mb-0.5">Peso EMMSA</p>
+                      <p className="text-slate-550 mb-0.5">Peso EMMSA</p>
                       <p className="text-slate-200">{activeTooltip.peso_emmsa} Kg</p>
                     </div>
                   )}
                   {activeTooltip.peso_petramas && (
                     <div>
-                      <p className="text-slate-500 mb-0.5">Peso Petramás</p>
+                      <p className="text-slate-550 mb-0.5">Peso Petramás</p>
                       <p className="text-slate-200">{activeTooltip.peso_petramas} Kg</p>
                     </div>
                   )}
+                </div>
+              )}
+
+              {activeTooltip.observaciones && (
+                <div className="col-span-2 border-t border-slate-850 pt-2.5">
+                  <p className="text-slate-550 mb-0.5 uppercase tracking-wider">Observaciones</p>
+                  <p className="text-slate-200 bg-slate-950 p-2.5 rounded-xl border border-slate-850 font-medium whitespace-pre-wrap">{activeTooltip.observaciones}</p>
                 </div>
               )}
             </div>

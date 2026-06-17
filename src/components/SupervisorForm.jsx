@@ -214,6 +214,22 @@ export default function SupervisorForm({
     setter(`${horas}:${minutos}`);
   };
 
+  const toggleAsistenteNombre = (nombre) => {
+    const nombresActuales = asistenciaInput
+      .split(/[\n,]+/)
+      .map(n => n.trim())
+      .filter(Boolean);
+      
+    let nuevosNombres;
+    if (nombresActuales.includes(nombre)) {
+      nuevosNombres = nombresActuales.filter(n => n !== nombre);
+    } else {
+      nuevosNombres = [...nombresActuales, nombre];
+    }
+    
+    setAsistenciaInput(nuevosNombres.join(', '));
+  };
+
   const handleCancelarEdicion = () => {
     setConductorNombreInput('');
     setFase('emmsa');
@@ -402,14 +418,48 @@ export default function SupervisorForm({
                 value={asistenciaInput}
                 onChange={(e) => setAsistenciaInput(e.target.value)}
                 placeholder="Ej. Paola Tesen, Jesus Laban, Carlos Flores, Juan Quispe"
-                rows={4}
+                rows={3}
                 className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-3 py-3 text-sm sm:px-4 sm:py-4 sm:text-base font-bold text-slate-100 placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 resize-none"
                 required
               />
               <span className="text-[10px] sm:text-[11px] text-slate-500 font-bold mt-1 block">
-                * Esto creará el catálogo del día y facilitará la escritura de horarios en las compactas.
+                * Puedes escribir nuevos nombres directamente o seleccionarlos abajo.
               </span>
             </div>
+
+            {/* SELECCIÓN RÁPIDA DE CONDUCTORES */}
+            {todosLosConductores.length > 0 && (
+              <div className="flex flex-col gap-2 bg-slate-950/30 p-3 rounded-xl border border-slate-800">
+                <label className="text-xs font-bold text-slate-350 block">
+                  Selección Rápida (Toca para marcar asistencia):
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[140px] overflow-y-auto pr-1">
+                  {todosLosConductores.map(c => {
+                    const nombresActuales = asistenciaInput
+                      .split(/[\n,]+/)
+                      .map(n => n.trim())
+                      .filter(Boolean);
+                    const estaAsistiendo = nombresActuales.includes(c.nombre);
+                    
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => toggleAsistenteNombre(c.nombre)}
+                        className={`px-3 py-2 rounded-xl border-2 text-xs font-bold transition-all flex items-center justify-between cursor-pointer active:scale-95 ${
+                          estaAsistiendo
+                            ? 'bg-indigo-650/15 border-indigo-500 text-indigo-400 font-black shadow-inner shadow-indigo-600/5'
+                            : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-750'
+                        }`}
+                      >
+                        <span className="truncate">{c.nombre}</span>
+                        {estaAsistiendo && <span className="text-[10px] font-black text-indigo-400">✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Vista Previa Rápida de Códigos */}
             {asistenciaInput.trim() && (
@@ -487,19 +537,28 @@ export default function SupervisorForm({
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mt-1">
               {PLACAS_PRECONFIGURADAS.map((placa) => {
                 const count = obtenerCantidadSegmentos(placa);
+                const isRegistered = count > 0;
                 return (
                   <button
                     key={placa}
                     type="button"
                     onClick={() => abrirRegistroVehiculo(placa)}
-                    className="flex flex-col items-center justify-center p-3.5 sm:p-5 bg-slate-950/70 border-2 border-slate-800 hover:border-indigo-500 rounded-xl sm:rounded-2xl hover:bg-slate-900 transition-all cursor-pointer group active:scale-[0.98]"
+                    className={`flex flex-col items-center justify-center p-3.5 sm:p-5 border-2 rounded-xl sm:rounded-2xl transition-all cursor-pointer group active:scale-[0.98] ${
+                      isRegistered
+                        ? 'bg-indigo-650/5 border-indigo-500/40 hover:border-indigo-500 hover:bg-indigo-650/10'
+                        : 'bg-slate-950 border-slate-800 hover:border-slate-700 hover:bg-slate-900/50'
+                    }`}
                   >
-                    <Truck className="text-slate-500 group-hover:text-indigo-400 w-6 h-6 sm:w-8 sm:h-8 mb-1.5 sm:mb-2 transition-colors" />
-                    <span className="text-sm sm:text-lg font-black text-slate-100 group-hover:text-indigo-300 transition-colors">
+                    <Truck className={`w-6 h-6 sm:w-8 sm:h-8 mb-1.5 sm:mb-2 transition-colors ${
+                      isRegistered ? 'text-indigo-500' : 'text-slate-550 group-hover:text-indigo-400'
+                    }`} />
+                    <span className={`text-sm sm:text-lg font-black transition-colors ${
+                      isRegistered ? 'text-indigo-600' : 'text-slate-100 group-hover:text-indigo-300'
+                    }`}>
                       {placa}
                     </span>
-                    <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full mt-1.5 ${
-                      count > 0 ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-900 text-slate-500'
+                    <span className={`text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full mt-1.5 ${
+                      isRegistered ? 'bg-indigo-600 text-white font-black' : 'bg-slate-900 text-slate-550 border border-slate-800'
                     }`}>
                       {count === 1 ? '1 tiempo' : `${count} tiempos`}
                     </span>
@@ -570,8 +629,29 @@ export default function SupervisorForm({
                       <option key={c.id} value={c.nombre} />
                     ))}
                   </datalist>
-                  <span className="text-[9px] sm:text-[10px] text-indigo-400 font-bold mt-1 block">
-                    * Sugiriendo conductores del día ({conductoresActivosDia.length} en total).
+
+                  {/* CHIPS DE SELECCIÓN RÁPIDA DE CONDUCTOR */}
+                  {conductoresActivosDia.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5 max-h-[110px] overflow-y-auto pr-1">
+                      {conductoresActivosDia.map(c => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => setConductorNombreInput(c.nombre)}
+                          className={`px-2.5 py-1.5 rounded-lg border-2 text-[10px] sm:text-xs font-bold transition-all cursor-pointer active:scale-95 ${
+                            conductorNombreInput === c.nombre
+                              ? 'bg-indigo-650/15 border-indigo-500 text-indigo-400 font-black shadow-inner'
+                              : 'bg-slate-950 border-slate-800 text-slate-450 hover:border-slate-750'
+                          }`}
+                        >
+                          {c.nombre}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <span className="text-[9px] text-indigo-400 font-bold mt-1.5 block">
+                    * Puedes escribir el nombre o tocar un botón de selección rápida arriba.
                   </span>
                 </div>
 
@@ -584,40 +664,40 @@ export default function SupervisorForm({
                     <button
                       type="button"
                       onClick={() => setFase('emmsa')}
-                      className={`py-2 sm:py-2.5 rounded-xl border-2 text-[10px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                      className={`py-3 rounded-xl border-2 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                         fase === 'emmsa'
-                          ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 font-black shadow-lg'
+                          ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 font-black shadow-lg shadow-emerald-500/5'
                           : 'border-slate-800 hover:border-slate-700 bg-slate-950/50 text-slate-500'
                       }`}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full block ${fase === 'emmsa' ? 'bg-emerald-500' : 'bg-slate-700'}`}></span>
+                      <span className={`w-2 h-2 rounded-full block ${fase === 'emmsa' ? 'bg-emerald-500' : 'bg-slate-700'}`}></span>
                       🟢 EMMSA
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setFase('viaje')}
-                      className={`py-2 sm:py-2.5 rounded-xl border-2 text-[10px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                      className={`py-3 rounded-xl border-2 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                         fase === 'viaje'
-                          ? 'bg-orange-500/15 border-orange-500 text-orange-300 font-black shadow-lg'
+                          ? 'bg-orange-500/15 border-orange-500 text-orange-300 font-black shadow-lg shadow-orange-500/5'
                           : 'border-slate-800 hover:border-slate-700 bg-slate-950/50 text-slate-500'
                       }`}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full block ${fase === 'viaje' ? 'bg-orange-500' : 'bg-slate-700'}`}></span>
+                      <span className={`w-2 h-2 rounded-full block ${fase === 'viaje' ? 'bg-orange-500' : 'bg-slate-700'}`}></span>
                       🟠 Viaje
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setFase('inoperativo')}
-                      className={`py-2 sm:py-2.5 rounded-xl border-2 text-[10px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                      className={`py-3 rounded-xl border-2 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                         fase === 'inoperativo'
                           ? 'bg-red-500/15 border-red-500 text-red-300 font-black shadow-lg shadow-red-500/5'
                           : 'border-slate-800 hover:border-slate-700 bg-slate-950/50 text-slate-500'
                       }`}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full block ${fase === 'inoperativo' ? 'bg-red-500' : 'bg-slate-700'}`}></span>
-                      🔴 Inoperativo
+                      <span className={`w-2 h-2 rounded-full block ${fase === 'inoperativo' ? 'bg-red-500' : 'bg-slate-700'}`}></span>
+                      🔴 Inop.
                     </button>
                   </div>
                 </div>
@@ -724,20 +804,20 @@ export default function SupervisorForm({
                 <h4 className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-800 pb-1.5">
                   Tiempos Registrados Hoy ({registrosPlaca.length}):
                 </h4>
-                
                 <div className="flex flex-col gap-2 overflow-y-auto max-h-[180px] pr-1">
                   {registrosPlaca.length > 0 ? (
                     registrosPlaca.map((segmento) => {
                       const cond = todosLosConductores.find(c => c.id === segmento.conductor_id) || { nombre: segmento.conductor_id, codigo: '?' };
-                      const esEmmsa = segmento.fase === 'emmsa';
                       
                       return (
                         <div 
                           key={segmento.id}
                           className={`flex items-center justify-between p-2.5 border rounded-xl text-[11px] sm:text-xs font-bold ${
-                            esEmmsa 
+                            segmento.fase === 'emmsa' 
                               ? 'bg-emerald-950/20 border-emerald-500/20 text-emerald-300' 
-                              : 'bg-orange-950/20 border-orange-500/20 text-orange-300'
+                              : segmento.fase === 'viaje'
+                                ? 'bg-orange-950/20 border-orange-500/20 text-orange-300'
+                                : 'bg-red-950/20 border-red-500/20 text-red-350'
                           }`}
                         >
                           <div className="flex items-center gap-2">
@@ -752,10 +832,10 @@ export default function SupervisorForm({
                           <button
                             type="button"
                             onClick={() => handleEliminarSegmento(segmento.id)}
-                            className="p-1 text-slate-500 hover:text-red-400 transition-colors cursor-pointer"
+                            className="p-2 text-slate-550 hover:text-red-400 active:scale-90 transition-all cursor-pointer"
                             title="Eliminar tiempo"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-4.5 h-4.5" />
                           </button>
                         </div>
                       );
@@ -775,7 +855,7 @@ export default function SupervisorForm({
           {/* Botón Volver al Tablero */}
           <button
             onClick={() => setPaso(3)}
-            className="w-full mt-auto py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs sm:text-sm font-bold border-t border-slate-750/50 cursor-pointer rounded-xl"
+            className="w-full mt-auto py-3.5 bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs sm:text-sm font-black border-t border-slate-750/50 cursor-pointer rounded-xl transition-all"
           >
             ← Volver al Listado de Placas
           </button>

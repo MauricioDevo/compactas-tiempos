@@ -560,17 +560,6 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
           </div>
         </div>
       )}
-
-      {/* Sugerencia de Zoom con CTRL + rueda */}
-      {showCtrlHint && (
-        <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-[1px] flex items-center justify-center z-45 transition-opacity duration-300 pointer-events-none rounded-2xl">
-          <div className="bg-slate-900 border border-slate-850 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-bold text-slate-200">
-            <span className="bg-slate-950 px-2 py-1 rounded border border-slate-800 text-indigo-400 font-extrabold text-[10px]">CTRL</span>
-            <span>+ Rueda del mouse para hacer zoom</span>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

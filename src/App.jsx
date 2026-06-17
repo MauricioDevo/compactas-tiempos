@@ -299,7 +299,7 @@ export default function App() {
                     <Users className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-base font-black text-white">Rendimiento de Conductores</h3>
+                    <h3 className="text-base font-black text-slate-100">Rendimiento de Conductores</h3>
                     <p className="text-xs text-slate-400 font-medium">Horas de conducción acumuladas hoy</p>
                   </div>
                 </div>
@@ -349,7 +349,7 @@ export default function App() {
                     <Timer className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-base font-black text-white">Horas Muertas por Unidad</h3>
+                    <h3 className="text-base font-black text-slate-100">Horas Muertas por Unidad</h3>
                     <p className="text-xs text-slate-400 font-medium">Inactividad en EMMSA superior a 30 minutos</p>
                   </div>
                 </div>

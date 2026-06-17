@@ -15,21 +15,22 @@
   --color-indigo-900: #4d000a;
   --color-indigo-950: #330005;
 
-  /* Paleta Slate personalizada - Tonos carbón y vino de Petroaseo */
-  --color-slate-50: #faf7f8;
-  --color-slate-100: #f4eff0;
-  --color-slate-200: #e5dedf;
-  --color-slate-300: #c9bcbe;
-  --color-slate-400: #a38f93;
-  --color-slate-500: #826c70;
-  --color-slate-550: #70595d;
-  --color-slate-600: #5a4549;
-  --color-slate-700: #3d2b2e;
-  --color-slate-750: #2f1e21;
-  --color-slate-800: #241619;
-  --color-slate-850: #1a0f11;
-  --color-slate-900: #12090b;
-  --color-slate-950: #080304;
+  /* Paleta Slate personalizada - Versión Corporate Light */
+  --color-slate-50: #0f172a;
+  --color-slate-100: #0f172a;
+  --color-slate-200: #1e293b;
+  --color-slate-300: #334155;
+  --color-slate-400: #64748b;
+  --color-slate-500: #94a3b8;
+  --color-slate-550: #475569;
+  --color-slate-600: #cbd5e1;
+  --color-slate-650: #cbd5e1;
+  --color-slate-700: #cbd5e1;
+  --color-slate-750: #e2e8f0;
+  --color-slate-800: #f1f5f9;
+  --color-slate-850: #e2e8f0;
+  --color-slate-900: #ffffff;
+  --color-slate-950: #f8fafc;
 }
 
 
@@ -39,8 +40,8 @@
 }
 
 body {
-  background-color: #080304; /* Slate 950 personalizado */
-  color: #e5dedf; /* Slate 200 personalizado */
+  background-color: #f8fafc; /* Fondo claro corporativo */
+  color: #1e293b; /* Texto oscuro principal */
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -55,27 +56,27 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(8, 3, 4, 0.4);
+  background: rgba(0, 0, 0, 0.03);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(179, 14, 46, 0.3); /* Petroaseo carmesí */
+  background: rgba(179, 14, 46, 0.2); /* Carmesí translúcido */
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(179, 14, 46, 0.65);
+  background: rgba(179, 14, 46, 0.45);
 }
 
 /* Efecto Glassmorphism */
 .glass-panel {
-  background: rgba(26, 15, 17, 0.75); /* Fusión carbón-vino */
+  background: rgba(255, 255, 255, 0.85); /* Vidrio blanco translúcido */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .glass-card {
-  background: rgba(18, 9, 11, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.03);
 }

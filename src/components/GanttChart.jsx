@@ -72,7 +72,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
         <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
           <div className="flex items-center gap-2.5">
             <Clock className="text-indigo-400 w-7 h-7 animate-pulse" />
-            <h2 className="text-xl font-black text-white">Movimiento de Compactas</h2>
+            <h2 className="text-xl font-black text-slate-100">Movimiento de Compactas</h2>
           </div>
           
           <div className="flex items-center gap-2 bg-slate-950 border-2 border-slate-800 rounded-xl px-3 py-2 shadow-inner">
@@ -92,7 +92,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
         </div>
         
         <div>
-          <h3 className="text-xl font-black text-white">No hay datos para analizar</h3>
+          <h3 className="text-xl font-black text-slate-100">No hay datos para analizar</h3>
           <p className="text-sm text-slate-400 mt-1 max-w-sm mx-auto">
             No se han registrado movimientos de compactas para el día operativo <span className="text-slate-200 font-bold">{date}</span>.
           </p>
@@ -115,7 +115,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div>
-            <h2 className="text-2xl font-black text-white flex items-center gap-2">
+            <h2 className="text-2xl font-black text-slate-100 flex items-center gap-2">
               <Clock className="text-indigo-400 w-7 h-7 animate-pulse" />
               Movimiento de Compactas (Gantt)
             </h2>
@@ -442,7 +442,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                 <span className="text-xs font-black bg-slate-950 border border-slate-800 px-3 py-1 rounded-lg text-indigo-400">
                   Vehículo: {activeTooltip.placa}
                 </span>
-                <h3 className="text-xl font-black text-white mt-3 flex items-center gap-2">
+                <h3 className="text-xl font-black text-slate-100 mt-3 flex items-center gap-2">
                   {getConductorInfo(activeTooltip.conductor_id).nombre}
                   <span className="text-xs font-extrabold bg-slate-800 text-slate-300 px-2 py-0.5 rounded">
                     Cód: {getConductorInfo(activeTooltip.conductor_id).codigo}

@@ -308,7 +308,7 @@ export default function SupervisorForm({
         <form onSubmit={handleSiguientePaso1} className="p-4 sm:p-6 flex flex-col justify-between flex-1 gap-5">
           <div className="flex flex-col gap-4">
             <div className="border-b-2 border-slate-800 pb-2.5">
-              <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-100 flex items-center gap-2">
                 <Calendar className="text-indigo-400 w-6 h-6 sm:w-7 sm:h-7" />
                 Iniciar Registro Diario
               </h2>
@@ -326,7 +326,7 @@ export default function SupervisorForm({
                   type="date"
                   value={fecha}
                   onChange={(e) => setFecha(e.target.value)}
-                  className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-3.5 py-3 text-base sm:text-lg font-black text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-3.5 py-3 text-base sm:text-lg font-black text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer"
                   required
                 />
                 <span className="text-[10px] sm:text-xs text-slate-550 font-bold mt-1 block">
@@ -343,7 +343,7 @@ export default function SupervisorForm({
                   value={supervisor}
                   onChange={(e) => setSupervisor(e.target.value)}
                   placeholder="Escribe tu nombre"
-                  className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-3.5 py-3 text-base sm:text-lg font-black text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-3.5 py-3 text-base sm:text-lg font-black text-slate-100 placeholder:text-slate-700 focus:outline-none focus:border-indigo-500"
                   required
                 />
               </div>
@@ -375,7 +375,7 @@ export default function SupervisorForm({
                 <span className="text-[10px] bg-slate-950 border border-slate-800 px-2 py-0.5 rounded font-black text-indigo-400">
                   Fecha: {fecha}
                 </span>
-                <h2 className="text-lg sm:text-xl font-black text-white mt-1 flex items-center gap-2">
+                <h2 className="text-lg sm:text-xl font-black text-slate-100 mt-1 flex items-center gap-2">
                   <Users className="text-indigo-400 w-5 h-5 sm:w-6 sm:h-6" />
                   Ingreso Masivo de Conductores
                 </h2>
@@ -403,7 +403,7 @@ export default function SupervisorForm({
                 onChange={(e) => setAsistenciaInput(e.target.value)}
                 placeholder="Ej. Paola Tesen, Jesus Laban, Carlos Flores, Juan Quispe"
                 rows={4}
-                className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-3 py-3 text-sm sm:px-4 sm:py-4 sm:text-base font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 resize-none"
+                className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-3 py-3 text-sm sm:px-4 sm:py-4 sm:text-base font-bold text-slate-100 placeholder:text-slate-700 focus:outline-none focus:border-indigo-500 resize-none"
                 required
               />
               <span className="text-[10px] sm:text-[11px] text-slate-500 font-bold mt-1 block">
@@ -457,7 +457,7 @@ export default function SupervisorForm({
                 <span className="text-[10px] bg-indigo-600 text-white font-black px-2.5 py-0.5 rounded uppercase">
                   Supervisor: {supervisor}
                 </span>
-                <h2 className="text-lg sm:text-xl font-black text-white mt-1">
+                <h2 className="text-lg sm:text-xl font-black text-slate-100 mt-1">
                   Selecciona la Compacta a registrar:
                 </h2>
               </div>
@@ -495,7 +495,7 @@ export default function SupervisorForm({
                     className="flex flex-col items-center justify-center p-3.5 sm:p-5 bg-slate-950/70 border-2 border-slate-800 hover:border-indigo-500 rounded-xl sm:rounded-2xl hover:bg-slate-900 transition-all cursor-pointer group active:scale-[0.98]"
                   >
                     <Truck className="text-slate-500 group-hover:text-indigo-400 w-6 h-6 sm:w-8 sm:h-8 mb-1.5 sm:mb-2 transition-colors" />
-                    <span className="text-sm sm:text-lg font-black text-white group-hover:text-indigo-300 transition-colors">
+                    <span className="text-sm sm:text-lg font-black text-slate-100 group-hover:text-indigo-300 transition-colors">
                       {placa}
                     </span>
                     <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full mt-1.5 ${
@@ -525,7 +525,7 @@ export default function SupervisorForm({
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setPaso(3)}
-                  className="p-1.5 bg-slate-950 border border-slate-800 rounded-xl hover:bg-slate-850 text-slate-400 hover:text-white cursor-pointer"
+                  className="p-1.5 bg-slate-950 border border-slate-800 rounded-xl hover:bg-slate-850 text-slate-400 hover:text-slate-100 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
@@ -533,7 +533,7 @@ export default function SupervisorForm({
                   <span className="text-[9px] sm:text-[10px] bg-slate-950 border border-slate-800 px-2 py-0.5 rounded font-black text-indigo-400">
                     Compacta: {placaSeleccionada}
                   </span>
-                  <h2 className="text-sm sm:text-lg font-black text-white mt-1">Llenar Horario</h2>
+                  <h2 className="text-sm sm:text-lg font-black text-slate-100 mt-1">Llenar Horario</h2>
                 </div>
               </div>
               
@@ -560,7 +560,7 @@ export default function SupervisorForm({
                     value={conductorNombreInput}
                     onChange={(e) => setConductorNombreInput(e.target.value)}
                     placeholder="Escribe el nombre del conductor"
-                    className="w-full bg-slate-950 border-2 border-slate-700/85 rounded-xl px-3 py-2.5 text-sm sm:text-base font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-950 border-2 border-slate-700/85 rounded-xl px-3 py-2.5 text-sm sm:text-base font-bold text-slate-100 placeholder:text-slate-700 focus:outline-none focus:border-indigo-500"
                     required
                     autoFocus
                   />
@@ -633,7 +633,7 @@ export default function SupervisorForm({
                         type="time"
                         value={horaInicio}
                         onChange={(e) => setHoraInicio(e.target.value)}
-                        className="flex-1 bg-slate-950 border-2 border-slate-700/60 rounded-xl px-2 py-2 text-xs sm:text-lg sm:py-3 sm:px-3 font-black text-white focus:outline-none"
+                        className="flex-1 bg-slate-950 border-2 border-slate-700/60 rounded-xl px-2 py-2 text-xs sm:text-lg sm:py-3 sm:px-3 font-black text-slate-100 focus:outline-none"
                         required
                       />
                       <button
@@ -655,7 +655,7 @@ export default function SupervisorForm({
                         type="time"
                         value={horaTermino}
                         onChange={(e) => setHoraTermino(e.target.value)}
-                        className="flex-1 bg-slate-950 border-2 border-slate-700/60 rounded-xl px-2 py-2 text-xs sm:text-lg sm:py-3 sm:px-3 font-black text-white focus:outline-none"
+                        className="flex-1 bg-slate-950 border-2 border-slate-700/60 rounded-xl px-2 py-2 text-xs sm:text-lg sm:py-3 sm:px-3 font-black text-slate-100 focus:outline-none"
                         required
                       />
                       <button
@@ -679,7 +679,7 @@ export default function SupervisorForm({
                     value={observaciones}
                     onChange={(e) => setObservaciones(e.target.value)}
                     placeholder="Ej. Falla mecánica en alternador, cambio de llanta"
-                    className="w-full bg-slate-950 border-2 border-slate-700/85 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-950 border-2 border-slate-700/85 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-100 placeholder:text-slate-700 focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 

@@ -198,6 +198,34 @@ const generateDriverCode = (index) => {
   return code;
 };
 
+export const deleteDriver = async (driverId) => {
+  if (supabase) {
+    const { error } = await supabase
+      .from('conductores')
+      .delete()
+      .eq('id', driverId);
+      
+    if (error) {
+      console.error('Error al eliminar conductor en Supabase:', error);
+      return false;
+    }
+    notifySubscribers();
+    return true;
+  }
+
+  // Fallback LocalStorage
+  try {
+    const drivers = JSON.parse(localStorage.getItem('petrolimpio_conductores')) || [];
+    const filteredDrivers = drivers.filter(d => d.id !== driverId);
+    localStorage.setItem('petrolimpio_conductores', JSON.stringify(filteredDrivers));
+    notifySubscribers();
+    return true;
+  } catch (error) {
+    console.error('Error al eliminar conductor en LocalStorage:', error);
+    return false;
+  }
+};
+
 // ----------------------------------------------------
 // GESTIÓN DE ASISTENCIA DIARIA MASIVA
 // ----------------------------------------------------

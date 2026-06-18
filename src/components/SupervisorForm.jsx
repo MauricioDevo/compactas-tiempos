@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   getDrivers, 
   addDriver, 
+  deleteDriver,
   saveRecord, 
   deleteRecord,
   getRecords,
@@ -158,6 +159,31 @@ export default function SupervisorForm({
     } catch (err) {
       console.error('Error al iniciar jornada:', err);
       setErrorMsg('Error al conectar con la base de datos de Supabase. Revisa tu conexión.');
+    }
+  };
+
+  const eliminarConductorCatalogo = async (conductor) => {
+    if (window.confirm(`¿Deseas eliminar al conductor "${conductor.nombre}" del catálogo de selección rápida?`)) {
+      try {
+        const success = await deleteDriver(conductor.id);
+        if (success) {
+          // Actualizar catálogo global
+          const data = await getDrivers();
+          setTodosLosConductores(data);
+          
+          // También quitarlo del input de asistencia actual si estuviera escrito
+          const nombresActuales = asistenciaInput
+            .split(/[\n,]+/)
+            .map(n => n.trim())
+            .filter(n => n && n.toLowerCase() !== conductor.nombre.toLowerCase());
+          setAsistenciaInput(nombresActuales.join(', '));
+        } else {
+          setErrorMsg('Error al eliminar al conductor de la base de datos.');
+        }
+      } catch (err) {
+        console.error('Error al eliminar conductor:', err);
+        setErrorMsg('Error al conectar para eliminar conductor.');
+      }
     }
   };
 
@@ -442,19 +468,38 @@ export default function SupervisorForm({
                     const estaAsistiendo = nombresActuales.includes(c.nombre);
                     
                     return (
-                      <button
+                      <div
                         key={c.id}
-                        type="button"
-                        onClick={() => toggleAsistenteNombre(c.nombre)}
-                        className={`px-3 py-2 rounded-xl border-2 text-xs font-bold transition-all flex items-center justify-between cursor-pointer active:scale-95 ${
+                        className={`group px-3 py-1 rounded-xl border-2 text-xs font-bold transition-all flex items-center justify-between ${
                           estaAsistiendo
                             ? 'bg-indigo-650/15 border-indigo-500 text-indigo-400 font-black shadow-inner shadow-indigo-600/5'
                             : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-750'
                         }`}
                       >
-                        <span className="truncate">{c.nombre}</span>
-                        {estaAsistiendo && <span className="text-[10px] font-black text-indigo-400">✓</span>}
-                      </button>
+                        <span
+                          onClick={() => toggleAsistenteNombre(c.nombre)}
+                          className="truncate flex-grow py-1.5 cursor-pointer select-none text-left"
+                          title={`Marcar asistencia para ${c.nombre}`}
+                        >
+                          {c.nombre}
+                        </span>
+                        
+                        {estaAsistiendo ? (
+                          <span className="text-[10px] font-black text-indigo-400 select-none ml-1 shrink-0">✓</span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              eliminarConductorCatalogo(c);
+                            }}
+                            className="opacity-40 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded-md text-rose-500 hover:bg-rose-500/10 transition-opacity cursor-pointer ml-1.5 shrink-0"
+                            title="Eliminar de la selección rápida"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     );
                   })}
                 </div>

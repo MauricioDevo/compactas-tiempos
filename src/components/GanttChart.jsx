@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getDrivers, saveRecord, deleteRecord, getMinutesFromTime, formatMinutesToTime } from '../services/db';
 import { Clock, Edit2, Trash2, Calendar, ZoomIn, ZoomOut, Download } from 'lucide-react';
-import html2canvas from 'html2canvas-pro';
+import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 
 
@@ -42,28 +42,24 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
       if (btn) btn.style.display = 'none';
       
       const originalStyle = cardElement.style.cssText;
-      
-      cardElement.style.width = '1650px';
-      cardElement.style.minWidth = '1650px';
-      cardElement.style.maxWidth = '1650px';
-      
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'auto';
 
-      const canvas = await html2canvas(cardElement, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
+      // Capture using html-to-image with styles inlined dynamically to ensure CSS variables work
+      const imgData = await toPng(cardElement, {
+        quality: 1.0,
         backgroundColor: '#ffffff',
         width: 1650,
-        windowWidth: 1650
+        height: cardElement.offsetHeight,
+        style: {
+          width: '1650px',
+          minWidth: '1650px',
+          maxWidth: '1650px',
+        }
       });
 
-      cardElement.style.cssText = originalStyle;
       if (btn) btn.style.display = '';
       document.body.style.overflow = originalOverflow;
-
-      const imgData = canvas.toDataURL('image/png');
       
       const pdf = new jsPDF({
         orientation: 'landscape',
@@ -75,13 +71,13 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
       const pdfHeight = 210;
       const margin = 10;
       const contentWidth = pdfWidth - (margin * 2);
-      const contentHeight = (canvas.height * contentWidth) / canvas.width;
+      const contentHeight = (cardElement.offsetHeight * contentWidth) / 1650;
 
       let finalWidth = contentWidth;
       let finalHeight = contentHeight;
       if (contentHeight > (pdfHeight - (margin * 2))) {
         finalHeight = pdfHeight - (margin * 2);
-        finalWidth = (canvas.width * finalHeight) / canvas.height;
+        finalWidth = (1650 * finalHeight) / cardElement.offsetHeight;
       }
 
       const x = (pdfWidth - finalWidth) / 2;
@@ -92,7 +88,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
     } catch (error) {
       console.error('Error al generar PDF:', error);
       if (btn) btn.style.display = '';
-      alert('Error al generar el PDF.');
+      alert('Error al generar el PDF: ' + error.message);
     }
   };
 

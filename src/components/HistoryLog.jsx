@@ -28,22 +28,27 @@ export default function HistoryLog() {
     return () => unsubscribe();
   }, []);
 
-  // Filtrado
-  const filteredItems = historyItems.filter((item) => {
+  // Filtrado defensivo
+  const filteredItems = Array.isArray(historyItems) ? historyItems.filter((item) => {
+    if (!item) return false;
     const term = searchTerm.trim().toLowerCase();
     
+    const supervisor = item.supervisor ? String(item.supervisor).toLowerCase() : '';
+    const conductor = item.conductor_nombre ? String(item.conductor_nombre).toLowerCase() : '';
+    const placa = item.placa ? String(item.placa).toLowerCase() : '';
+
     // Filtro por término de búsqueda (Supervisor, Conductor, Placa)
     const matchesSearch = 
       term === '' ||
-      item.supervisor.toLowerCase().includes(term) ||
-      (item.conductor_nombre && item.conductor_nombre.toLowerCase().includes(term)) ||
-      item.placa.toLowerCase().includes(term);
+      supervisor.includes(term) ||
+      conductor.includes(term) ||
+      placa.includes(term);
 
     // Filtro por fecha de operación (fecha_registro)
     const matchesDate = filterDate === '' || item.fecha_registro === filterDate;
 
     return matchesSearch && matchesDate;
-  });
+  }) : [];
 
   // Paginación
   const totalItems = filteredItems.length;
@@ -57,7 +62,7 @@ export default function HistoryLog() {
   }, [filteredItems.length, totalPages]);
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedItems = filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const paginatedItems = Array.isArray(filteredItems) ? filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE) : [];
 
   const formatDateTime = (isoString) => {
     if (!isoString) return '';
@@ -224,30 +229,30 @@ export default function HistoryLog() {
             </thead>
             <tbody className="divide-y divide-slate-850 font-bold text-slate-300">
               {paginatedItems.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-850/40 transition-colors">
+                <tr key={item.id || Math.random().toString()} className="hover:bg-slate-850/40 transition-colors">
                   <td className="py-3.5 pl-3 text-slate-400 whitespace-nowrap">
                     {formatDateTime(item.fecha_accion)}
                   </td>
                   <td className="py-3.5 text-slate-100 font-extrabold whitespace-nowrap">
-                    {item.supervisor}
+                    {item.supervisor || 'N/A'}
                   </td>
                   <td className="py-3.5 whitespace-nowrap">
                     {getActionBadge(item.accion)}
                   </td>
                   <td className="py-3.5 text-center text-slate-100 font-black text-sm whitespace-nowrap">
-                    {item.placa}
+                    {item.placa || 'N/A'}
                   </td>
                   <td className="py-3.5 text-slate-200 whitespace-nowrap">
-                    {item.conductor_nombre}
+                    {item.conductor_nombre || 'N/A'}
                   </td>
                   <td className="py-3.5 whitespace-nowrap">
                     {getFaseBadge(item.fase)}
                   </td>
                   <td className="py-3.5 text-slate-200 font-extrabold whitespace-nowrap">
-                    {item.hora_inicio} - {item.hora_termino}
+                    {(item.hora_inicio || '')} - {(item.hora_termino || '')}
                   </td>
                   <td className="py-3.5 text-center text-slate-400 whitespace-nowrap font-medium">
-                    {item.fecha_registro}
+                    {item.fecha_registro || ''}
                   </td>
                   <td className="py-3.5 pr-3 max-w-[200px] truncate text-slate-400 font-medium italic" title={item.observaciones}>
                     {item.observaciones || <span className="text-slate-600 not-italic">Sin obs.</span>}

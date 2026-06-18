@@ -313,7 +313,8 @@ export const getHistory = async () => {
     }
 
     // Fallback LocalStorage
-    const history = JSON.parse(localStorage.getItem('petrolimpio_historial')) || [];
+    const parsed = JSON.parse(localStorage.getItem('petrolimpio_historial'));
+    const history = Array.isArray(parsed) ? parsed : [];
     return [...history].reverse();
   } catch (err) {
     console.error('Error en getHistory:', err);

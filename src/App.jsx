@@ -33,6 +33,44 @@ const obtenerTurnoActual = () => {
   return 'Noche';
 };
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-6 bg-red-900/10 border-2 border-red-500 rounded-2xl text-red-200 font-bold flex flex-col gap-3">
+          <h3 className="text-lg font-black">⚠️ Error al cargar el Historial</h3>
+          <p className="text-xs font-mono bg-red-950/40 p-3 rounded">
+            {this.state.error?.toString() || "Error desconocido"}
+          </p>
+          <pre className="text-[10px] font-mono opacity-80 whitespace-pre-wrap max-h-40 overflow-y-auto">
+            {this.state.error?.stack}
+          </pre>
+          <button 
+            onClick={() => this.setState({ hasError: false, error: null })} 
+            className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-xs font-black cursor-pointer text-white self-start"
+          >
+            Reintentar
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   const hoyStr = new Date().toISOString().split('T')[0];
   
@@ -455,7 +493,9 @@ export default function App() {
         {/* VISTA 3: HISTORIAL DE CAMBIOS */}
         {vistaActiva === 'historial' && (
           <div className="w-full animate-fade-in">
-            <HistoryLog />
+            <ErrorBoundary>
+              <HistoryLog />
+            </ErrorBoundary>
           </div>
         )}
 

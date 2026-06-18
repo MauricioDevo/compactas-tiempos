@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { 
   getDrivers, 
   addDriver, 
-  deleteDriver,
   saveRecord, 
   deleteRecord,
   getRecords,
@@ -162,31 +161,6 @@ export default function SupervisorForm({
     }
   };
 
-  const eliminarConductorCatalogo = async (conductor) => {
-    if (window.confirm(`¿Deseas eliminar al conductor "${conductor.nombre}" del catálogo de selección rápida?`)) {
-      try {
-        const success = await deleteDriver(conductor.id);
-        if (success) {
-          // Actualizar catálogo global
-          const data = await getDrivers();
-          setTodosLosConductores(data);
-          
-          // También quitarlo del input de asistencia actual si estuviera escrito
-          const nombresActuales = asistenciaInput
-            .split(/[\n,]+/)
-            .map(n => n.trim())
-            .filter(n => n && n.toLowerCase() !== conductor.nombre.toLowerCase());
-          setAsistenciaInput(nombresActuales.join(', '));
-        } else {
-          setErrorMsg('Error al eliminar al conductor de la base de datos.');
-        }
-      } catch (err) {
-        console.error('Error al eliminar conductor:', err);
-        setErrorMsg('Error al conectar para eliminar conductor.');
-      }
-    }
-  };
-
   // PASO 2 -> PASO 3 (Guardado masivo de asistencia)
   const handleGuardarAsistenciaMasiva = async (e) => {
     e.preventDefault();
@@ -240,21 +214,7 @@ export default function SupervisorForm({
     setter(`${horas}:${minutos}`);
   };
 
-  const toggleAsistenteNombre = (nombre) => {
-    const nombresActuales = asistenciaInput
-      .split(/[\n,]+/)
-      .map(n => n.trim())
-      .filter(Boolean);
-      
-    let nuevosNombres;
-    if (nombresActuales.includes(nombre)) {
-      nuevosNombres = nombresActuales.filter(n => n !== nombre);
-    } else {
-      nuevosNombres = [...nombresActuales, nombre];
-    }
-    
-    setAsistenciaInput(nuevosNombres.join(', '));
-  };
+
 
   const handleCancelarEdicion = () => {
     setConductorNombreInput('');
@@ -449,62 +409,9 @@ export default function SupervisorForm({
                 required
               />
               <span className="text-[10px] sm:text-[11px] text-slate-500 font-bold mt-1 block">
-                * Puedes escribir nuevos nombres directamente o seleccionarlos abajo.
+                * Escribe los nombres de los conductores separados por comas o saltos de línea.
               </span>
             </div>
-
-            {/* SELECCIÓN RÁPIDA DE CONDUCTORES */}
-            {todosLosConductores.length > 0 && (
-              <div className="flex flex-col gap-2 bg-slate-950/30 p-3 rounded-xl border border-slate-800">
-                <label className="text-xs font-bold text-slate-350 block">
-                  Selección Rápida (Toca para marcar asistencia):
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[140px] overflow-y-auto pr-1">
-                  {todosLosConductores.map(c => {
-                    const nombresActuales = asistenciaInput
-                      .split(/[\n,]+/)
-                      .map(n => n.trim())
-                      .filter(Boolean);
-                    const estaAsistiendo = nombresActuales.includes(c.nombre);
-                    
-                    return (
-                      <div
-                        key={c.id}
-                        className={`group px-3 py-1 rounded-xl border-2 text-xs font-bold transition-all flex items-center justify-between ${
-                          estaAsistiendo
-                            ? 'bg-indigo-650/15 border-indigo-500 text-indigo-400 font-black shadow-inner shadow-indigo-600/5'
-                            : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-750'
-                        }`}
-                      >
-                        <span
-                          onClick={() => toggleAsistenteNombre(c.nombre)}
-                          className="truncate flex-grow py-1.5 cursor-pointer select-none text-left"
-                          title={`Marcar asistencia para ${c.nombre}`}
-                        >
-                          {c.nombre}
-                        </span>
-                        
-                        {estaAsistiendo ? (
-                          <span className="text-[10px] font-black text-indigo-400 select-none ml-1 shrink-0">✓</span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              eliminarConductorCatalogo(c);
-                            }}
-                            className="opacity-40 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded-md text-rose-500 hover:bg-rose-500/10 transition-opacity cursor-pointer ml-1.5 shrink-0"
-                            title="Eliminar de la selección rápida"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* Vista Previa Rápida de Códigos */}
             {asistenciaInput.trim() && (

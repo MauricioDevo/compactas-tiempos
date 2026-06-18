@@ -37,3 +37,21 @@ CREATE TABLE IF NOT EXISTS asistencia (
 ALTER TABLE conductores DISABLE ROW LEVEL SECURITY;
 ALTER TABLE registros DISABLE ROW LEVEL SECURITY;
 ALTER TABLE asistencia DISABLE ROW LEVEL SECURITY;
+
+-- 4. Tabla de Historial (Auditoría de Cambios)
+CREATE TABLE IF NOT EXISTS historial (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    fecha_accion TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    supervisor TEXT NOT NULL,
+    accion TEXT NOT NULL, -- 'CREAR', 'EDITAR' o 'ELIMINAR'
+    registro_id UUID NOT NULL,
+    placa TEXT NOT NULL,
+    conductor_nombre TEXT NOT NULL,
+    fase TEXT NOT NULL,
+    hora_inicio TEXT NOT NULL,
+    hora_termino TEXT NOT NULL,
+    observaciones TEXT,
+    fecha_registro DATE NOT NULL
+);
+
+ALTER TABLE historial DISABLE ROW LEVEL SECURITY;

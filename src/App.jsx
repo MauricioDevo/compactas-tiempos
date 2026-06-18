@@ -11,6 +11,7 @@ import {
 } from './services/db';
 import SupervisorForm from './components/SupervisorForm';
 import GanttChart from './components/GanttChart';
+import HistoryLog from './components/HistoryLog';
 import { 
   Truck, 
   Calendar, 
@@ -21,7 +22,8 @@ import {
   Menu,
   X,
   Users,
-  Timer
+  Timer,
+  History
 } from 'lucide-react';
 
 const obtenerTurnoActual = () => {
@@ -147,6 +149,20 @@ export default function App() {
             Análisis y Monitoreo
           </button>
 
+          <button
+            onClick={() => {
+              setVistaActiva('historial');
+              setMenuMovilAbierto(false);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+              vistaActiva === 'historial'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10'
+                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <History className="w-5 h-5" />
+            Historial de Cambios
+          </button>
         </nav>
       </div>
     </div>
@@ -238,7 +254,7 @@ export default function App() {
 
         {/* Título de Vista Activa */}
         <div className="text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-900 px-3 py-1 rounded-lg">
-          {vistaActiva === 'analisis' ? 'Análisis' : 'Registro'}
+          {vistaActiva === 'analisis' ? 'Análisis' : vistaActiva === 'historial' ? 'Historial' : 'Registro'}
         </div>
 
         {/* Botón de Menú (Hamburger) */}
@@ -433,6 +449,13 @@ export default function App() {
               onCancelEdit={() => setRegistroAEditar(null)}
               records={registros}
             />
+          </div>
+        )}
+
+        {/* VISTA 3: HISTORIAL DE CAMBIOS */}
+        {vistaActiva === 'historial' && (
+          <div className="w-full animate-fade-in">
+            <HistoryLog />
           </div>
         )}
 

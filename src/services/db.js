@@ -77,6 +77,9 @@ export const subscribeToDB = (callback) => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'asistencia' }, () => {
         callback();
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'historial' }, () => {
+        callback();
+      })
       .subscribe();
   }
 
@@ -111,6 +114,10 @@ const initializeDB = () => {
 
   if (!localStorage.getItem('petrolimpio_asistencia')) {
     localStorage.setItem('petrolimpio_asistencia', JSON.stringify({}));
+  }
+
+  if (!localStorage.getItem('petrolimpio_historial')) {
+    localStorage.setItem('petrolimpio_historial', JSON.stringify([]));
   }
 };
 
@@ -247,6 +254,74 @@ export const getActiveDriversForDate = async (dateStr) => {
 };
 
 // ----------------------------------------------------
+// HISTORIAL DE CAMBIOS Y AUDITORÍA
+// ----------------------------------------------------
+export const logAction = async (accion, record, supervisorOverride) => {
+  try {
+    const drivers = await getDrivers();
+    const driver = drivers.find(d => d.id === record.conductor_id);
+    const conductor_nombre = driver ? driver.nombre : 'Desconocido';
+    const supervisor = supervisorOverride || record.supervisor || 'Supervisor';
+
+    const logEntry = {
+      id: crypto.randomUUID(),
+      fecha_accion: new Date().toISOString(),
+      supervisor: supervisor.trim(),
+      accion,
+      registro_id: record.id,
+      placa: record.placa,
+      conductor_nombre,
+      fase: record.fase,
+      hora_inicio: record.hora_inicio,
+      hora_termino: record.hora_termino,
+      observaciones: record.observaciones || null,
+      fecha_registro: record.fecha
+    };
+
+    if (supabase) {
+      const { error } = await supabase.from('historial').insert([logEntry]);
+      if (error) {
+        console.error('Error al guardar log en Supabase:', error);
+      }
+      notifySubscribers();
+      return logEntry;
+    }
+
+    // Fallback LocalStorage
+    const history = JSON.parse(localStorage.getItem('petrolimpio_historial')) || [];
+    history.push(logEntry);
+    localStorage.setItem('petrolimpio_historial', JSON.stringify(history));
+    notifySubscribers();
+    return logEntry;
+  } catch (err) {
+    console.error('Error en logAction:', err);
+  }
+};
+
+export const getHistory = async () => {
+  try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('historial')
+        .select('*')
+        .order('fecha_accion', { ascending: false });
+      if (error) {
+        console.error('Error al obtener historial en Supabase:', error);
+        return [];
+      }
+      return data || [];
+    }
+
+    // Fallback LocalStorage
+    const history = JSON.parse(localStorage.getItem('petrolimpio_historial')) || [];
+    return [...history].reverse();
+  } catch (err) {
+    console.error('Error en getHistory:', err);
+    return [];
+  }
+};
+
+// ----------------------------------------------------
 // REGISTROS OPERATIVOS
 // ----------------------------------------------------
 export const getRecords = async (dateStr) => {
@@ -286,9 +361,30 @@ export const saveRecord = async (recordData) => {
     updated_at: new Date().toISOString()
   };
 
+  // Determinar si es creación o edición
+  let isEdit = false;
+  try {
+    if (recordData.id) {
+      if (supabase) {
+        const { data } = await supabase.from('registros').select('id').eq('id', recordData.id).maybeSingle();
+        if (data) isEdit = true;
+      } else {
+        const records = JSON.parse(localStorage.getItem('petrolimpio_registros')) || [];
+        const existing = records.find(r => r.id === recordData.id);
+        if (existing) isEdit = true;
+      }
+    }
+  } catch (err) {
+    console.error('Error al detectar si es edición:', err);
+  }
+
   if (supabase) {
     const { error } = await supabase.from('registros').upsert(newRecord);
     if (error) console.error('Error al guardar registro en Supabase:', error);
+    
+    // Log al historial
+    await logAction(isEdit ? 'EDITAR' : 'CREAR', newRecord, newRecord.supervisor);
+
     notifySubscribers();
     return newRecord;
   }
@@ -303,11 +399,34 @@ export const saveRecord = async (recordData) => {
   }
 
   localStorage.setItem('petrolimpio_registros', JSON.stringify(records));
+  
+  // Log al historial
+  await logAction(isEdit ? 'EDITAR' : 'CREAR', newRecord, newRecord.supervisor);
+
   notifySubscribers();
   return newRecord;
 };
 
-export const deleteRecord = async (id) => {
+export const deleteRecord = async (id, supervisorName) => {
+  let recordToDelete = null;
+  try {
+    if (supabase) {
+      const { data } = await supabase.from('registros').select('*').eq('id', id).maybeSingle();
+      recordToDelete = data;
+    } else {
+      const records = JSON.parse(localStorage.getItem('petrolimpio_registros')) || [];
+      recordToDelete = records.find(r => r.id === id);
+    }
+  } catch (err) {
+    console.error('Error al obtener registro antes de eliminar:', err);
+  }
+
+  // Registrar en el historial antes de eliminar físicamente
+  if (recordToDelete) {
+    const activeSupervisor = supervisorName || localStorage.getItem('petrolimpio_active_supervisor') || 'Supervisor';
+    await logAction('ELIMINAR', recordToDelete, activeSupervisor);
+  }
+
   if (supabase) {
     const { error } = await supabase.from('registros').delete().eq('id', id);
     if (error) console.error('Error al eliminar registro en Supabase:', error);

@@ -307,7 +307,7 @@ export default function SupervisorForm({
 
   const handleEliminarSegmento = async (id) => {
     if (window.confirm('¿Deseas eliminar este bloque de tiempo?')) {
-      await deleteRecord(id);
+      await deleteRecord(id, supervisor);
       if (onRecordSaved) onRecordSaved();
     }
   };

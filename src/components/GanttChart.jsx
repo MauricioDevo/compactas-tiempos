@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getDrivers, saveRecord, deleteRecord, getMinutesFromTime, formatMinutesToTime } from '../services/db';
 import { Clock, Edit2, Trash2, Calendar, ZoomIn, ZoomOut, Download } from 'lucide-react';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import { jsPDF } from 'jspdf';
 
 

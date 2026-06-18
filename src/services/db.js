@@ -66,8 +66,10 @@ export const subscribeToDB = (callback) => {
   // Si estamos en Supabase, también nos suscribimos en tiempo real a los cambios de la tabla 'registros'
   let subscription = null;
   if (supabase) {
+    // Generar un ID de canal único para evitar colisiones al tener múltiples suscripciones activas
+    const channelId = `schema-changes-${Math.random().toString(36).substring(2, 9)}`;
     subscription = supabase
-      .channel('schema-db-changes')
+      .channel(channelId)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'registros' }, () => {
         callback();
       })

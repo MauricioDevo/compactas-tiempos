@@ -59,36 +59,39 @@ const CONDUCTORES_INICIALES = [
 ];
 
 const listeners = new Set();
+let globalChannel = null;
 
 export const subscribeToDB = (callback) => {
   listeners.add(callback);
   
-  // Si estamos en Supabase, también nos suscribimos en tiempo real a los cambios de la tabla 'registros'
-  let subscription = null;
-  if (supabase) {
-    // Generar un ID de canal único para evitar colisiones al tener múltiples suscripciones activas
-    const channelId = `schema-changes-${Math.random().toString(36).substring(2, 9)}`;
-    subscription = supabase
-      .channel(channelId)
+  // Si estamos en Supabase, creamos un único canal global para todos los oyentes
+  if (supabase && !globalChannel) {
+    globalChannel = supabase
+      .channel('schema-db-changes-global')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'registros' }, () => {
-        callback();
+        listeners.forEach(cb => cb());
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conductores' }, () => {
-        callback();
+        listeners.forEach(cb => cb());
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'asistencia' }, () => {
-        callback();
+        listeners.forEach(cb => cb());
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'historial' }, () => {
-        callback();
+        listeners.forEach(cb => cb());
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`📡 Suscripción global a Supabase activa: ${status}`);
+      });
   }
 
   return () => {
     listeners.delete(callback);
-    if (subscription) {
-      supabase.removeChannel(subscription);
+    // Si ya no quedan oyentes locales, removemos el canal global para ahorrar recursos
+    if (listeners.size === 0 && globalChannel) {
+      supabase.removeChannel(globalChannel);
+      globalChannel = null;
+      console.log('📡 Suscripción global a Supabase removida (sin oyentes).');
     }
   };
 };

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getDrivers, saveRecord, deleteRecord, getMinutesFromTime, formatMinutesToTime } from '../services/db';
-import { Clock, Edit2, Trash2, Calendar, ZoomIn, ZoomOut } from 'lucide-react';
+import { Clock, Edit2, Trash2, Calendar, ZoomIn, ZoomOut, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 
 const HORAS_EJE_X = [
@@ -14,6 +16,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
   const [nowPercent, setNowPercent] = useState(-1);
   const [observacionInput, setObservacionInput] = useState('');
   const chartContainerRef = useRef(null);
+  const chartCardRef = useRef(null);
 
   useEffect(() => {
     if (activeTooltip) {
@@ -28,6 +31,70 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
     };
     cargarConductores();
   }, [records]);
+
+  const exportPDF = async () => {
+    const cardElement = chartCardRef.current;
+    if (!cardElement) return;
+
+    const btn = cardElement.querySelector('[title="Descargar gráfico en PDF"]');
+    
+    try {
+      if (btn) btn.style.display = 'none';
+      
+      const originalStyle = cardElement.style.cssText;
+      
+      cardElement.style.width = '1650px';
+      cardElement.style.minWidth = '1650px';
+      cardElement.style.maxWidth = '1650px';
+      
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'auto';
+
+      const canvas = await html2canvas(cardElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        width: 1650,
+        windowWidth: 1650
+      });
+
+      cardElement.style.cssText = originalStyle;
+      if (btn) btn.style.display = '';
+      document.body.style.overflow = originalOverflow;
+
+      const imgData = canvas.toDataURL('image/png');
+      
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pdfWidth = 297;
+      const pdfHeight = 210;
+      const margin = 10;
+      const contentWidth = pdfWidth - (margin * 2);
+      const contentHeight = (canvas.height * contentWidth) / canvas.width;
+
+      let finalWidth = contentWidth;
+      let finalHeight = contentHeight;
+      if (contentHeight > (pdfHeight - (margin * 2))) {
+        finalHeight = pdfHeight - (margin * 2);
+        finalWidth = (canvas.width * finalHeight) / canvas.height;
+      }
+
+      const x = (pdfWidth - finalWidth) / 2;
+      const y = (pdfHeight - finalHeight) / 2;
+
+      pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+      pdf.save(`reporte-compactas-${date}.pdf`);
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+      if (btn) btn.style.display = '';
+      alert('Error al generar el PDF.');
+    }
+  };
 
 
 
@@ -116,7 +183,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
   }
 
   return (
-    <div className="bg-slate-900 p-6 rounded-2xl border-2 border-slate-800 shadow-xl flex flex-col gap-6 overflow-hidden relative">
+    <div ref={chartCardRef} className="bg-slate-900 p-6 rounded-2xl border-2 border-slate-800 shadow-xl flex flex-col gap-6 overflow-hidden relative">
       
       {/* Cabecera y Leyenda con Selector de Fecha integrado */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
@@ -131,15 +198,27 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
             </p>
           </div>
           
-          {/* Selector de fecha global en el gráfico */}
-          <div className="flex items-center gap-2 bg-slate-950 border-2 border-slate-800 rounded-xl px-3 py-2 shadow-inner">
-            <Calendar className="w-4 h-4 text-indigo-400" />
-            <input 
-              type="date"
-              value={date}
-              onChange={(e) => onDateChange && onDateChange(e.target.value)}
-              className="bg-transparent border-none text-xs font-bold text-slate-200 focus:outline-none cursor-pointer"
-            />
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Selector de fecha global en el gráfico */}
+            <div className="flex items-center gap-2 bg-slate-950 border-2 border-slate-800 rounded-xl px-3 py-2 shadow-inner">
+              <Calendar className="w-4 h-4 text-indigo-400" />
+              <input 
+                type="date"
+                value={date}
+                onChange={(e) => onDateChange && onDateChange(e.target.value)}
+                className="bg-transparent border-none text-xs font-bold text-slate-200 focus:outline-none cursor-pointer"
+              />
+            </div>
+
+            {/* Botón de descargar PDF */}
+            <button
+              onClick={exportPDF}
+              title="Descargar gráfico en PDF"
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs rounded-xl px-4 py-2.5 cursor-pointer transition-all shadow-md shadow-indigo-600/10 border-2 border-indigo-500/20"
+            >
+              <Download className="w-4 h-4" />
+              <span>Descargar PDF</span>
+            </button>
           </div>
         </div>
         

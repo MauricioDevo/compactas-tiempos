@@ -278,7 +278,9 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                 return (
                   <div 
                     key={hora} 
-                    className="absolute text-[11px] font-black text-slate-400 -translate-x-1/2"
+                    className={`absolute text-[11px] font-black text-slate-400 ${
+                      percent === 0 ? 'pl-1' : '-translate-x-1/2'
+                    }`}
                     style={{ left: `${percent}%` }}
                   >
                     {hora}

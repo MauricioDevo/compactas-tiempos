@@ -244,17 +244,58 @@ export const deleteDriver = async (driverId) => {
 
 // Guardar conductores activos para una fecha específica (Entrada Masiva)
 export const saveActiveDriversForDate = async (dateStr, namesArray) => {
-  if (supabase) {
-    // Registrar cada conductor en Supabase si es nuevo
-    for (const name of namesArray) {
-      await addDriver(name);
-    }
-    // Guardar la asistencia
-    const { error } = await supabase
-      .from('asistencia')
-      .upsert({ fecha: dateStr, nombres: namesArray });
+  const cleanedNames = namesArray.map(name => name.trim()).filter(Boolean);
+  if (cleanedNames.length === 0) return [];
 
-    if (error) console.error('Error al guardar asistencia en Supabase:', error);
+  if (supabase) {
+    // 1. Obtener todos los conductores actuales de Supabase de una sola vez
+    const { data: allDrivers, error: fetchDriversError } = await supabase
+      .from('conductores')
+      .select('*');
+      
+    if (fetchDriversError) {
+      console.error('Error al obtener conductores en saveActiveDriversForDate:', fetchDriversError);
+      return [];
+    }
+
+    const existingDrivers = allDrivers || [];
+    const existingNamesSet = new Set(existingDrivers.map(d => d.nombre.toLowerCase()));
+    const existingCodesSet = new Set(existingDrivers.map(d => d.codigo));
+
+    // Determinar qué conductores son nuevos
+    const newNames = cleanedNames.filter(name => !existingNamesSet.has(name.toLowerCase()));
+
+    // 2. Si hay nuevos, preparar y realizar un INSERT masivo (Batch Insert)
+    if (newNames.length > 0) {
+      let codeIndex = 0;
+      const driversToInsert = [];
+      
+      for (const name of newNames) {
+        // Encontrar el siguiente código secuencial disponible
+        let codigo = generateDriverCode(codeIndex);
+        while (existingCodesSet.has(codigo)) {
+          codeIndex++;
+          codigo = generateDriverCode(codeIndex);
+        }
+        existingCodesSet.add(codigo);
+        driversToInsert.push({ nombre: name, codigo });
+      }
+
+      const { error: insertError } = await supabase
+        .from('conductores')
+        .insert(driversToInsert);
+
+      if (insertError) {
+        console.error('Error en el insert masivo de conductores:', insertError);
+      }
+    }
+
+    // 3. Guardar la asistencia
+    const { error: upsertError } = await supabase
+      .from('asistencia')
+      .upsert({ fecha: dateStr, nombres: cleanedNames });
+
+    if (upsertError) console.error('Error al guardar asistencia en Supabase:', upsertError);
     notifySubscribers();
     return await getActiveDriversForDate(dateStr);
   }

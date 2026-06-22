@@ -132,19 +132,37 @@ export const getVehicles = () => {
   return PLACAS_PRECONFIGURADAS.map((placa, index) => ({ placa, orden: index + 1 }));
 };
 
-export const getDrivers = async () => {
+let driversCache = null;
+let driversCacheTime = 0;
+const CACHE_DURATION = 15000; // 15 segundos de caché en memoria
+
+export const getDrivers = async (forceRefresh = false) => {
+  const now = Date.now();
+  if (driversCache && (now - driversCacheTime < CACHE_DURATION) && !forceRefresh) {
+    return driversCache;
+  }
+
   if (supabase) {
     const { data, error } = await supabase.from('conductores').select('*');
     if (error) {
       console.error('Error al obtener conductores en Supabase:', error);
-      return [];
+      return driversCache || [];
     }
-    return data || [];
+    driversCache = data || [];
+    driversCacheTime = now;
+    return driversCache;
   }
-  return JSON.parse(localStorage.getItem('petrolimpio_conductores')) || [];
+
+  const localData = JSON.parse(localStorage.getItem('petrolimpio_conductores')) || [];
+  driversCache = localData;
+  driversCacheTime = now;
+  return driversCache;
 };
 
 export const addDriver = async (nombre) => {
+  // Invalidar caché
+  driversCache = null;
+
   if (supabase) {
     // Buscar si ya existe
     const { data: existing, error: searchError } = await supabase
@@ -211,6 +229,9 @@ const generateDriverCode = (index) => {
 };
 
 export const deleteDriver = async (driverId) => {
+  // Invalidar caché
+  driversCache = null;
+
   if (supabase) {
     const { error } = await supabase
       .from('conductores')
@@ -449,28 +470,16 @@ export const saveRecord = async (recordData) => {
   };
 
   // Determinar si es creación o edición
-  let isEdit = false;
-  try {
-    if (recordData.id) {
-      if (supabase) {
-        const { data } = await supabase.from('registros').select('id').eq('id', recordData.id).maybeSingle();
-        if (data) isEdit = true;
-      } else {
-        const records = JSON.parse(localStorage.getItem('petrolimpio_registros')) || [];
-        const existing = records.find(r => r.id === recordData.id);
-        if (existing) isEdit = true;
-      }
-    }
-  } catch (err) {
-    console.error('Error al detectar si es edición:', err);
-  }
+  const isEdit = !!recordData.id;
 
   if (supabase) {
     const { error } = await supabase.from('registros').upsert(newRecord);
     if (error) console.error('Error al guardar registro en Supabase:', error);
     
-    // Log al historial
-    await logAction(isEdit ? 'EDITAR' : 'CREAR', newRecord, newRecord.supervisor);
+    // Log al historial en segundo plano (asíncrono) para optimizar rendimiento de respuesta
+    logAction(isEdit ? 'EDITAR' : 'CREAR', newRecord, newRecord.supervisor).catch(err => {
+      console.error('Error al registrar historial en Supabase en segundo plano:', err);
+    });
 
     notifySubscribers();
     return newRecord;
@@ -487,8 +496,10 @@ export const saveRecord = async (recordData) => {
 
   localStorage.setItem('petrolimpio_registros', JSON.stringify(records));
   
-  // Log al historial
-  await logAction(isEdit ? 'EDITAR' : 'CREAR', newRecord, newRecord.supervisor);
+  // Log al historial en segundo plano
+  logAction(isEdit ? 'EDITAR' : 'CREAR', newRecord, newRecord.supervisor).catch(err => {
+    console.error('Error al registrar historial en LocalStorage:', err);
+  });
 
   notifySubscribers();
   return newRecord;
@@ -508,10 +519,12 @@ export const deleteRecord = async (id, supervisorName) => {
     console.error('Error al obtener registro antes de eliminar:', err);
   }
 
-  // Registrar en el historial antes de eliminar físicamente
+  // Registrar en el historial en segundo plano
   if (recordToDelete) {
     const activeSupervisor = supervisorName || localStorage.getItem('petrolimpio_active_supervisor') || 'Supervisor';
-    await logAction('ELIMINAR', recordToDelete, activeSupervisor);
+    logAction('ELIMINAR', recordToDelete, activeSupervisor).catch(err => {
+      console.error('Error al registrar eliminación en historial:', err);
+    });
   }
 
   if (supabase) {

@@ -157,11 +157,16 @@ export const addDriver = async (nombre) => {
       return existing[0];
     }
 
-    // Contar total para generar el código autosecuencial (A, B, C...)
-    const { data: all, error: countError } = await supabase.from('conductores').select('id');
-    if (countError) console.error('Error al contar conductores:', countError);
-    const count = all ? all.length : 0;
-    const codigo = generateDriverCode(count);
+    // Generar un código autosecuencial sin colisiones (A, B, C...)
+    const { data: all, error: fetchError } = await supabase.from('conductores').select('codigo');
+    if (fetchError) console.error('Error al consultar códigos existentes:', fetchError);
+    const existingCodes = new Set((all || []).map(d => d.codigo));
+    let codeIndex = 0;
+    let codigo = generateDriverCode(codeIndex);
+    while (existingCodes.has(codigo)) {
+      codeIndex++;
+      codigo = generateDriverCode(codeIndex);
+    }
 
     const { data, error } = await supabase
       .from('conductores')
@@ -180,7 +185,14 @@ export const addDriver = async (nombre) => {
   const exists = drivers.find(d => d.nombre.trim().toLowerCase() === nombre.trim().toLowerCase());
   if (exists) return exists;
 
-  const codigo = generateDriverCode(drivers.length);
+  const existingCodes = new Set(drivers.map(d => d.codigo));
+  let codeIndex = 0;
+  let codigo = generateDriverCode(codeIndex);
+  while (existingCodes.has(codigo)) {
+    codeIndex++;
+    codigo = generateDriverCode(codeIndex);
+  }
+
   const newDriver = { id: crypto.randomUUID(), nombre: nombre.trim(), codigo };
   drivers.push(newDriver);
   localStorage.setItem('petrolimpio_conductores', JSON.stringify(drivers));

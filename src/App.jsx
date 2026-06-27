@@ -310,7 +310,7 @@ export default function App() {
         <div className="lg:hidden fixed inset-0 z-50 flex">
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/60"
             onClick={() => setMenuMovilAbierto(false)}
           />
           {/* Panel */}
@@ -502,7 +502,7 @@ export default function App() {
       </main>
 
       {globalError && (
-        <div className="fixed bottom-4 right-4 left-4 md:left-auto md:w-96 bg-red-900/95 text-white p-4 rounded-xl shadow-2xl border border-red-500 z-50 text-xs font-bold flex flex-col gap-2 backdrop-blur-sm animate-fade-in">
+        <div className="fixed bottom-4 right-4 left-4 md:left-auto md:w-96 bg-red-900/95 text-white p-4 rounded-xl shadow-2xl border border-red-500 z-50 text-xs font-bold flex flex-col gap-2 animate-fade-in">
           <div className="flex justify-between items-center">
             <span>⚠️ Error en Celular / Red:</span>
             <button onClick={() => setGlobalError(null)} className="px-2 py-0.5 bg-red-800 hover:bg-red-700 rounded text-[10px] font-black uppercase cursor-pointer">Cerrar</button>

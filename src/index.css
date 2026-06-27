@@ -30,6 +30,19 @@
   --color-slate-850: #e2e8f0;
   --color-slate-900: #ffffff;
   --color-slate-950: #f8fafc;
+
+  /* Animaciones de transición suaves */
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-slide-in: slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slide-in {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
 }
 
 
@@ -67,15 +80,36 @@ body {
   background: rgba(179, 14, 46, 0.45);
 }
 
-/* Efecto Glassmorphism */
+/* Efecto Glassmorphism optimizado para evitar glitches en móvil */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.85); /* Vidrio blanco translúcido */
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.98); /* Fondo casi opaco en móvil para prevenir glitches cromáticos */
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.98);
   border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+@media (min-width: 1024px) {
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85); /* Translúcido en pantallas grandes */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+/* Aceleración por hardware para capas móviles (Gantt, sticky headers, etc.) */
+.safe-gpu {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform;
 }

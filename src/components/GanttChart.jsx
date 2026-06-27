@@ -262,7 +262,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
           {/* EJE X */}
           <div className="flex border-b border-slate-800 pb-2.5 mb-3 select-none">
             {/* Header de Eje Y (Pegajoso) */}
-            <div className="w-24 shrink-0 text-slate-500 text-xs font-black uppercase tracking-wider pl-3 sticky left-0 bg-slate-900 z-30 border-r border-slate-800/80 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.5)]">
+            <div className="w-24 shrink-0 text-slate-500 text-xs font-black uppercase tracking-wider pl-3 sticky left-0 bg-slate-900 z-30 border-r border-slate-800/80 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.5)] safe-gpu">
               Vehículo
             </div>
             
@@ -417,7 +417,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
               return (
                 <div key={placa} className="flex items-center h-14 group/row animate-fade-in">
                   {/* Eje Y (Pegajoso) */}
-                  <div className="w-24 shrink-0 flex flex-col justify-center pl-3 sticky left-0 bg-slate-900 z-20 border-r border-slate-800/80 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.5)] h-full">
+                  <div className="w-24 shrink-0 flex flex-col justify-center pl-3 sticky left-0 bg-slate-900 z-20 border-r border-slate-800/80 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.5)] h-full safe-gpu">
                     <span className="text-base font-black text-slate-100 group-hover/row:text-indigo-400 transition-colors leading-tight">
                       {placa}
                     </span>
@@ -513,9 +513,8 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
         </div>
       </div>
 
-      {/* MODAL DETALLADO DE TRIP / TOOLTIP */}
       {activeTooltip && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" onClick={() => setActiveTooltip(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => setActiveTooltip(null)}>
           <div 
             className="bg-slate-900 border-2 border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-4 relative overflow-hidden"
             onClick={(e) => e.stopPropagation()}

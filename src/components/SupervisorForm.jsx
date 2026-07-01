@@ -495,17 +495,17 @@ export default function SupervisorForm({
                     key={placa}
                     type="button"
                     onClick={() => abrirRegistroVehiculo(placa)}
-                    className={`flex flex-col items-center justify-center p-3.5 sm:p-5 border-2 rounded-xl sm:rounded-2xl transition-all cursor-pointer group active:scale-[0.98] ${
+                    className={`flex flex-col items-center justify-center p-3.5 sm:p-5 border-2 rounded-xl sm:rounded-2xl cursor-pointer group sm:transition-all sm:active:scale-[0.98] ${
                       isRegistered
-                        ? 'bg-indigo-650/5 border-indigo-500/40 hover:border-indigo-500 hover:bg-indigo-650/10'
-                        : 'bg-slate-950 border-slate-800 hover:border-slate-700 hover:bg-slate-900/50'
+                        ? 'bg-indigo-650/5 border-indigo-500/40 sm:hover:border-indigo-500 sm:hover:bg-indigo-650/10'
+                        : 'bg-slate-950 border-slate-800 sm:hover:border-slate-700 sm:hover:bg-slate-900/50'
                     }`}
                   >
-                    <Truck className={`w-6 h-6 sm:w-8 sm:h-8 mb-1.5 sm:mb-2 transition-colors ${
-                      isRegistered ? 'text-indigo-500' : 'text-slate-550 group-hover:text-indigo-400'
+                    <Truck className={`w-6 h-6 sm:w-8 sm:h-8 mb-1.5 sm:mb-2 sm:transition-colors ${
+                      isRegistered ? 'text-indigo-500' : 'text-slate-550 sm:group-hover:text-indigo-400'
                     }`} />
-                    <span className={`text-sm sm:text-lg font-black transition-colors ${
-                      isRegistered ? 'text-indigo-600' : 'text-slate-100 group-hover:text-indigo-300'
+                    <span className={`text-sm sm:text-lg font-black sm:transition-colors ${
+                      isRegistered ? 'text-indigo-600' : 'text-slate-100 sm:group-hover:text-indigo-300'
                     }`}>
                       {placa}
                     </span>

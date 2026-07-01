@@ -80,29 +80,15 @@ body {
   background: rgba(179, 14, 46, 0.45);
 }
 
-/* Efecto Glassmorphism optimizado para evitar glitches en móvil */
+/* Panel y Tarjetas (Glitches de renderizado removidos) */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.98); /* Fondo casi opaco en móvil para prevenir glitches cromáticos */
+  background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.98);
+  background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.03);
-}
-
-@media (min-width: 1024px) {
-  .glass-panel {
-    background: rgba(255, 255, 255, 0.85); /* Translúcido en pantallas grandes */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-
-  .glass-card {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
 }
 
 /* Aceleración por hardware para capas móviles (Gantt, sticky headers, etc.) */

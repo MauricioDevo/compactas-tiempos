@@ -43,7 +43,7 @@ export default function StaffManagement({ date, onlyForm = false, onlySummary = 
                        listaDescansosMedicos.length;
 
   const renderForm = () => (
-    <div className="glass-panel p-6 rounded-2xl shadow-xl flex flex-col gap-4">
+    <div className="bg-slate-900 border-2 border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col gap-4">
       <div>
         <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
           <Users className="text-indigo-400 w-5 h-5" />
@@ -120,7 +120,7 @@ export default function StaffManagement({ date, onlyForm = false, onlySummary = 
   );
 
   const renderSummary = () => (
-    <div className="glass-panel p-6 rounded-2xl shadow-xl flex flex-col justify-between gap-5 relative overflow-hidden bg-gradient-to-br from-slate-900/60 to-slate-950/80 h-full">
+    <div className="bg-slate-900 border-2 border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between gap-5 relative overflow-hidden h-full">
       <div>
         <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
           <Calculator className="text-indigo-400 w-5 h-5" />

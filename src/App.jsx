@@ -283,7 +283,7 @@ export default function App() {
       </aside>
 
       {/* CABECERA PARA PANTALLAS MÓVILES */}
-      <header className="lg:hidden glass-panel border-b border-slate-800/80 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+      <header className="lg:hidden bg-slate-900 border-b border-slate-850 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         
         {/* Marca */}
         <div className="bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100 flex items-center justify-center">

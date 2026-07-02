@@ -164,8 +164,8 @@ export default function App() {
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
               vistaActiva === 'registro'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10'
-                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'
             }`}
           >
             <ClipboardEdit className="w-5 h-5" />
@@ -179,8 +179,8 @@ export default function App() {
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
               vistaActiva === 'analisis'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10'
-                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'
             }`}
           >
             <BarChart3 className="w-5 h-5" />
@@ -194,8 +194,8 @@ export default function App() {
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
               vistaActiva === 'historial'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10'
-                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'
             }`}
           >
             <History className="w-5 h-5" />
@@ -502,7 +502,7 @@ export default function App() {
       </main>
 
       {globalError && (
-        <div className="fixed bottom-4 right-4 left-4 md:left-auto md:w-96 bg-red-900/95 text-white p-4 rounded-xl shadow-2xl border border-red-500 z-50 text-xs font-bold flex flex-col gap-2 animate-fade-in">
+        <div className="fixed bottom-4 right-4 left-4 md:left-auto md:w-96 bg-[#7f1d1d] text-white p-4 rounded-xl shadow-2xl border border-red-500 z-50 text-xs font-bold flex flex-col gap-2 animate-fade-in">
           <div className="flex justify-between items-center">
             <span>⚠️ Error en Celular / Red:</span>
             <button onClick={() => setGlobalError(null)} className="px-2 py-0.5 bg-red-800 hover:bg-red-700 rounded text-[10px] font-black uppercase cursor-pointer">Cerrar</button>

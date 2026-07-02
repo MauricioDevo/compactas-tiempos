@@ -303,7 +303,7 @@ export default function SupervisorForm({
   };
 
   return (
-    <div className="bg-slate-900 rounded-2xl border-2 border-slate-800 shadow-xl overflow-hidden min-h-[450px] flex flex-col">
+    <div className="bg-slate-900 rounded-2xl border border-slate-800 min-h-[450px] flex flex-col">
       
       {/* ----------------- PASO 1: CONFIGURAR JORNADA ----------------- */}
       {paso === 1 && (
@@ -328,7 +328,7 @@ export default function SupervisorForm({
                   type="date"
                   value={fecha}
                   onChange={(e) => setFecha(e.target.value)}
-                  className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-3.5 py-3 text-base sm:text-lg font-black text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-3 text-base sm:text-lg font-black text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer"
                   required
                 />
                 <span className="text-[10px] sm:text-xs text-slate-550 font-bold mt-1 block">
@@ -345,14 +345,14 @@ export default function SupervisorForm({
                   value={supervisor}
                   onChange={(e) => setSupervisor(e.target.value)}
                   placeholder="Escribe tu nombre"
-                  className="w-full bg-slate-950 border-2 border-slate-700/80 rounded-xl px-3.5 py-3 text-base sm:text-lg font-black text-slate-100 placeholder:text-slate-700 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-3 text-base sm:text-lg font-black text-slate-100 placeholder:text-slate-700 focus:outline-none focus:border-indigo-500"
                   required
                 />
               </div>
             </div>
 
             {errorMsg && (
-              <div className="bg-red-950/45 border-2 border-red-500/30 text-red-200 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2">
+              <div className="bg-[#fde8e8] border border-red-300 text-red-800 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2">
                 <AlertTriangle className="w-4.5 h-4.5 shrink-0" /> {errorMsg}
               </div>
             )}
@@ -360,7 +360,7 @@ export default function SupervisorForm({
 
           <button
             type="submit"
-            className="w-full py-3.5 sm:py-4.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-base sm:text-lg font-black shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all cursor-pointer mt-3"
+            className="w-full py-3.5 sm:py-4.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-base sm:text-lg font-black shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer mt-3"
           >
             Siguiente: Registrar Conductores <ChevronRight className="w-5 h-5" />
           </button>
@@ -428,13 +428,13 @@ export default function SupervisorForm({
             )}
 
             {errorMsg && (
-              <div className="bg-red-950/45 border-2 border-red-500/30 text-red-200 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2">
+              <div className="bg-[#fde8e8] border border-red-300 text-red-800 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2">
                 <AlertTriangle className="w-4.5 h-4.5 shrink-0" /> {errorMsg}
               </div>
             )}
 
             {successMsg && (
-              <div className="bg-emerald-950/45 border-2 border-emerald-500/30 text-emerald-250 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2">
+              <div className="bg-[#eafaf1] border border-emerald-300 text-emerald-800 p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2">
                 <CheckCircle2 className="w-4.5 h-4.5 shrink-0" /> {successMsg}
               </div>
             )}
@@ -443,7 +443,7 @@ export default function SupervisorForm({
 
           <button
             type="submit"
-            className="w-full py-3.5 sm:py-4.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-base sm:text-lg font-black shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all cursor-pointer mt-3"
+            className="w-full py-3.5 sm:py-4.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-base sm:text-lg font-black shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer mt-3"
           >
             Confirmar Asistencia y Seleccionar Compactas <ChevronRight className="w-5 h-5" />
           </button>
@@ -592,7 +592,7 @@ export default function SupervisorForm({
                           onClick={() => setConductorNombreInput(c.nombre)}
                           className={`px-2.5 py-1.5 rounded-lg border-2 text-[10px] sm:text-xs font-bold transition-all cursor-pointer active:scale-95 ${
                             conductorNombreInput === c.nombre
-                              ? 'bg-indigo-650/15 border-indigo-500 text-indigo-400 font-black shadow-inner'
+                              ? 'bg-[#fbe6ea] border-indigo-500 text-indigo-600 font-black'
                               : 'bg-slate-950 border-slate-800 text-slate-450 hover:border-slate-750'
                           }`}
                         >
@@ -618,8 +618,8 @@ export default function SupervisorForm({
                       onClick={() => setFase('emmsa')}
                       className={`py-3 rounded-xl border-2 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                         fase === 'emmsa'
-                          ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 font-black shadow-lg shadow-emerald-500/5'
-                          : 'border-slate-800 hover:border-slate-700 bg-slate-950/50 text-slate-500'
+                          ? 'bg-[#e6f7ed] border-emerald-500 text-emerald-600 font-black'
+                          : 'border-slate-800 hover:border-slate-700 bg-slate-950 text-slate-500'
                       }`}
                     >
                       <span className={`w-2 h-2 rounded-full block ${fase === 'emmsa' ? 'bg-emerald-500' : 'bg-slate-700'}`}></span>
@@ -631,8 +631,8 @@ export default function SupervisorForm({
                       onClick={() => setFase('viaje')}
                       className={`py-3 rounded-xl border-2 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                         fase === 'viaje'
-                          ? 'bg-orange-500/15 border-orange-500 text-orange-300 font-black shadow-lg shadow-orange-500/5'
-                          : 'border-slate-800 hover:border-slate-700 bg-slate-950/50 text-slate-500'
+                          ? 'bg-[#fff3e6] border-orange-500 text-orange-600 font-black'
+                          : 'border-slate-800 hover:border-slate-700 bg-slate-950 text-slate-500'
                       }`}
                     >
                       <span className={`w-2 h-2 rounded-full block ${fase === 'viaje' ? 'bg-orange-500' : 'bg-slate-700'}`}></span>
@@ -644,8 +644,8 @@ export default function SupervisorForm({
                       onClick={() => setFase('inoperativo')}
                       className={`py-3 rounded-xl border-2 text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                         fase === 'inoperativo'
-                          ? 'bg-red-500/15 border-red-500 text-red-300 font-black shadow-lg shadow-red-500/5'
-                          : 'border-slate-800 hover:border-slate-700 bg-slate-950/50 text-slate-500'
+                          ? 'bg-[#ffe6e6] border-red-500 text-red-600 font-black'
+                          : 'border-slate-800 hover:border-slate-700 bg-slate-950 text-slate-500'
                       }`}
                     >
                       <span className={`w-2 h-2 rounded-full block ${fase === 'inoperativo' ? 'bg-red-500' : 'bg-slate-700'}`}></span>
@@ -734,7 +734,7 @@ export default function SupervisorForm({
                 <div className="flex gap-2.5 mt-1 w-full">
                   <button
                     type="submit"
-                    className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 active:scale-[0.98] rounded-xl text-white text-sm sm:text-base font-black shadow-md shadow-indigo-600/10 cursor-pointer transition-all"
+                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] rounded-xl text-white text-sm sm:text-base font-black shadow-md cursor-pointer transition-all"
                   >
                     {registroAEditar ? 'Guardar Cambios' : `+ Añadir Tiempo`}
                   </button>

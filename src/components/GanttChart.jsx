@@ -170,7 +170,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
 
         <button
           onClick={onGoToRegister}
-          className="px-6 py-3 bg-indigo-650 hover:bg-indigo-600 active:scale-[0.98] rounded-xl text-xs font-bold text-white transition-all cursor-pointer shadow-lg shadow-indigo-600/10 mb-4"
+          className="px-6 py-3 bg-indigo-650 hover:bg-indigo-600 active:scale-[0.98] rounded-xl text-xs font-bold text-white transition-all cursor-pointer shadow-md mb-4"
         >
           + Registrar Compactas para este día
         </button>
@@ -210,7 +210,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
             <button
               onClick={exportPDF}
               title="Descargar gráfico en PDF"
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs rounded-xl px-4 py-2.5 cursor-pointer transition-all shadow-md shadow-indigo-600/10 border-2 border-indigo-500/20"
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs rounded-xl px-4 py-2.5 cursor-pointer transition-all shadow-md border-2 border-indigo-500/20"
             >
               <Download className="w-4 h-4" />
               <span>Descargar PDF</span>
@@ -262,7 +262,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
           {/* EJE X */}
           <div className="flex border-b border-slate-800 pb-2.5 mb-3 select-none">
             {/* Header de Eje Y (Pegajoso) */}
-            <div className="w-24 shrink-0 text-slate-500 text-xs font-black uppercase tracking-wider pl-3 sticky left-0 bg-slate-900 z-30 border-r border-slate-800/80 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.5)] safe-gpu">
+            <div className="w-24 shrink-0 text-slate-500 text-xs font-black uppercase tracking-wider pl-3 sticky left-0 bg-slate-900 z-30 border-r border-slate-800 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.5)] safe-gpu">
               Vehículo
             </div>
             
@@ -316,7 +316,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                     start: getMinutesFromTime(record.hora_inicio),
                     end: getMinutesFromTime(record.hora_termino),
                     type: 'EMMSA',
-                    color: 'bg-emerald-500/90 border-emerald-450 shadow-emerald-500/10 text-white',
+                    color: 'bg-[#10b981] border-[#34d399] text-white',
                     label: `🟢 ${conductor.nombre}`,
                     times: `${record.hora_inicio} - ${record.hora_termino}`,
                     record,
@@ -329,7 +329,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                     start: getMinutesFromTime(record.hora_inicio),
                     end: getMinutesFromTime(record.hora_termino),
                     type: 'Viaje Relleno',
-                    color: 'bg-orange-500/90 border-orange-450 shadow-orange-500/10 text-white',
+                    color: 'bg-[#f97316] border-[#fb923c] text-white',
                     label: `🟠 ${conductor.nombre}`,
                     times: `${record.hora_inicio} - ${record.hora_termino}`,
                     record,
@@ -342,7 +342,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                     start: getMinutesFromTime(record.hora_inicio),
                     end: getMinutesFromTime(record.hora_termino),
                     type: 'Inoperativo',
-                    color: 'bg-rose-600/95 border-rose-500 shadow-rose-600/10 text-white',
+                    color: 'bg-[#e11d48] border-[#f43f5e] text-white',
                     label: `🔴 Inop. ${conductor.nombre}`,
                     times: `${record.hora_inicio} - ${record.hora_termino}`,
                     record,
@@ -417,7 +417,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
               return (
                 <div key={placa} className="flex items-center h-14 group/row animate-fade-in">
                   {/* Eje Y (Pegajoso) */}
-                  <div className="w-24 shrink-0 flex flex-col justify-center pl-3 sticky left-0 bg-slate-900 z-20 border-r border-slate-800/80 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.5)] h-full safe-gpu">
+                  <div className="w-24 shrink-0 flex flex-col justify-center pl-3 sticky left-0 bg-slate-900 z-20 border-r border-slate-800 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.5)] h-full safe-gpu">
                     <span className="text-base font-black text-slate-100 group-hover/row:text-indigo-400 transition-colors leading-tight">
                       {placa}
                     </span>
@@ -427,7 +427,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                   </div>
 
                   {/* Fila del Gráfico */}
-                  <div className="flex-1 h-full bg-slate-950/70 border-2 border-slate-800/60 rounded-xl relative overflow-hidden shadow-inner">
+                  <div className="flex-1 h-full bg-slate-950 border-2 border-slate-800 rounded-xl relative overflow-hidden shadow-inner">
                     
                     {/* Cuadrícula vertical de 24 líneas (Alineadas exactamente con cada hora) */}
                     <div className="absolute inset-0 pointer-events-none opacity-[0.12] z-0">

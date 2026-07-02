@@ -486,7 +486,7 @@ export default function SupervisorForm({
               Asistencia hoy: <span className="text-indigo-400 font-bold">{conductoresActivosDia.length} conductores</span>.
             </p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mt-1">
+            <div className="flex flex-col gap-2 mt-1">
               {PLACAS_PRECONFIGURADAS.map((placa) => {
                 const count = obtenerCantidadSegmentos(placa);
                 const isRegistered = count > 0;
@@ -495,25 +495,34 @@ export default function SupervisorForm({
                     key={placa}
                     type="button"
                     onClick={() => abrirRegistroVehiculo(placa)}
-                    className={`flex flex-col items-center justify-center p-3.5 sm:p-5 border-2 rounded-xl sm:rounded-2xl cursor-pointer group sm:transition-all sm:active:scale-[0.98] ${
+                    className={`flex items-center justify-between p-3.5 border-2 rounded-xl cursor-pointer w-full text-left transition-all active:scale-[0.99] ${
                       isRegistered
-                        ? 'bg-indigo-650/5 border-indigo-500/40 sm:hover:border-indigo-500 sm:hover:bg-indigo-650/10'
-                        : 'bg-slate-950 border-slate-800 sm:hover:border-slate-700 sm:hover:bg-slate-900/50'
+                        ? 'bg-[#fdf2f4] border-[#f1a1af] hover:border-indigo-500 hover:bg-[#fbe6ea]'
+                        : 'bg-slate-950 border-slate-800 hover:border-slate-750 hover:bg-slate-900'
                     }`}
                   >
-                    <Truck className={`w-6 h-6 sm:w-8 sm:h-8 mb-1.5 sm:mb-2 sm:transition-colors ${
-                      isRegistered ? 'text-indigo-500' : 'text-slate-550 sm:group-hover:text-indigo-400'
-                    }`} />
-                    <span className={`text-sm sm:text-lg font-black sm:transition-colors ${
-                      isRegistered ? 'text-indigo-600' : 'text-slate-100 sm:group-hover:text-indigo-300'
-                    }`}>
-                      {placa}
-                    </span>
-                    <span className={`text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full mt-1.5 ${
-                      isRegistered ? 'bg-indigo-600 text-white font-black' : 'bg-slate-900 text-slate-550 border border-slate-800'
-                    }`}>
-                      {count === 1 ? '1 tiempo' : `${count} tiempos`}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2.5 rounded-xl ${isRegistered ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-500 border border-slate-800'}`}>
+                        <Truck className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <span className={`text-base font-black tracking-wide block ${isRegistered ? 'text-indigo-600' : 'text-slate-100'}`}>
+                          {placa}
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-bold block mt-0.5">
+                          Compacta de servicio
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2.5">
+                      <span className={`text-xs font-black px-3 py-1 rounded-full ${
+                        isRegistered ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-550 border border-slate-800'
+                      }`}>
+                        {count === 0 ? 'Sin tiempos' : count === 1 ? '1 tiempo' : `${count} tiempos`}
+                      </span>
+                      <ChevronRight className={`w-5 h-5 ${isRegistered ? 'text-indigo-500' : 'text-slate-500'}`} />
+                    </div>
                   </button>
                 );
               })}

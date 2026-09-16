@@ -211,8 +211,10 @@ export default function App() {
     const recordsCond = registros.filter(r => r.conductor_id === cond.id);
     let totalMinutos = 0;
     recordsCond.forEach(r => {
-      const start = getMinutesFromTime(r.hora_inicio);
-      const end = getMinutesFromTime(r.hora_termino);
+      let start = getMinutesFromTime(r.hora_inicio);
+      let end = getMinutesFromTime(r.hora_termino);
+      if (end < start) end += 1440; // Cruza la medianoche
+
       if (end > start) {
         totalMinutos += (end - start);
       }
@@ -236,8 +238,11 @@ export default function App() {
   // 2. Calcular horas muertas por placa (Brechas en EMMSA > 30 min)
   const reporteHorasMuertas = PLACAS_PRECONFIGURADAS.map(placa => {
     const recordsPlaca = registros.filter(r => r.placa === placa);
+    // Ordenar considerando que si hay un registro de medianoche, su hora absoluta puede ser mayor
     const sortedRecords = [...recordsPlaca].sort((a, b) => {
-      return getMinutesFromTime(a.hora_inicio) - getMinutesFromTime(b.hora_inicio);
+      let startA = getMinutesFromTime(a.hora_inicio);
+      let startB = getMinutesFromTime(b.hora_inicio);
+      return startA - startB;
     });
 
     const brechas = [];
@@ -247,10 +252,13 @@ export default function App() {
       const preceding = sortedRecords[i];
       const succeeding = sortedRecords[i+1];
 
-      // La hora muerta ocurre solo si termina EMMSA (fase === 'emmsa') y luego sale a viaje (fase === 'viaje')
       if (preceding.fase === 'emmsa' && succeeding.fase === 'viaje') {
-        const finActual = getMinutesFromTime(preceding.hora_termino);
-        const inicioSiguiente = getMinutesFromTime(succeeding.hora_inicio);
+        let finActual = getMinutesFromTime(preceding.hora_termino);
+        if (finActual < getMinutesFromTime(preceding.hora_inicio)) finActual += 1440;
+        
+        let inicioSiguiente = getMinutesFromTime(succeeding.hora_inicio);
+        // Si el viaje siguiente empezó después del cruce de medianoche
+        if (inicioSiguiente < getMinutesFromTime(preceding.hora_inicio)) inicioSiguiente += 1440;
 
         if (inicioSiguiente > finActual) {
           const diff = inicioSiguiente - finActual;

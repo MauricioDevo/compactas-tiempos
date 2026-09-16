@@ -4,12 +4,6 @@ import { Clock, Edit2, Trash2, Calendar, ZoomIn, ZoomOut, Download } from 'lucid
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 
-
-const HORAS_EJE_X = [
-  '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
-  '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', '00:00', '01:00', '02:00', '03:00', '04:00', '05:00'
-];
-
 export default function GanttChart({ date, records, onEditRecord, onDeleteRecord, onDateChange, onGoToRegister }) {
   const [conductores, setConductores] = useState([]);
   const [activeTooltip, setActiveTooltip] = useState(null);
@@ -92,9 +86,6 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
     }
   };
 
-
-
-
   // Indicador de hora actual en tiempo real para el día de hoy
   useEffect(() => {
     const updateTimeIndicator = () => {
@@ -108,15 +99,8 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
       const hour = now.getHours();
       const minute = now.getMinutes();
       
-      let minutesSinceStart = 0;
-      if (hour < 6) {
-        minutesSinceStart = (hour + 18) * 60 + minute;
-      } else {
-        minutesSinceStart = (hour - 6) * 60 + minute;
-      }
-
-      const percent = (minutesSinceStart / 1440) * 100;
-      setNowPercent(percent >= 0 && percent <= 100 ? percent : -1);
+      const minutesSinceStart = (hour * 60) + minute;
+      setNowPercent(minutesSinceStart); // Pasamos los minutos puros
     };
 
     updateTimeIndicator();
@@ -259,107 +243,65 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
           style={{ minWidth: '1600px' }}
         >
           
-          {/* EJE X */}
-          <div className="flex border-b border-slate-800 pb-2.5 mb-3 select-none">
-            {/* Header de Eje Y (Pegajoso) */}
-            <div className="w-24 shrink-0 text-slate-500 text-xs font-black uppercase tracking-wider pl-3 sticky left-0 bg-slate-900 z-30 border-r border-slate-800 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.5)] safe-gpu">
-              Vehículo
-            </div>
+          {(() => {
+            let maxEndMinute = 1440; // Por defecto siempre muestra al menos 24 hrs
+            const vehicleBlocks = {};
             
-            <div className="flex-1 relative flex justify-between pr-4">
-              {HORAS_EJE_X.map((hora) => {
-                const hourNum = parseInt(hora.split(':')[0]);
-                let percent = 0;
-                if (hourNum < 6) {
-                  percent = ((hourNum + 18) / 24) * 100;
-                } else {
-                  percent = ((hourNum - 6) / 24) * 100;
-                }
-                return (
-                  <div 
-                    key={hora} 
-                    className={`absolute text-[11px] font-black text-slate-400 ${
-                      percent === 0 ? 'pl-1' : '-translate-x-1/2'
-                    }`}
-                    style={{ left: `${percent}%` }}
-                  >
-                    {hora}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* CUERPO DE FILAS */}
-          <div className="flex flex-col gap-2.5 relative">
-            
-            {/* LÍNEA DE HORA ACTUAL */}
-            {nowPercent >= 0 && (
-              <div 
-                className="absolute top-0 bottom-0 w-0.5 bg-rose-500 z-20 pointer-events-none"
-                style={{ left: `calc(6rem + ${nowPercent}% * (100% - 6rem) / 100)` }}
-              >
-                <div className="absolute top-0 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-rose-500 ring-4 ring-rose-500/20" />
-              </div>
-            )}
-
-            {placasGantt.map((placa) => {
+            placasGantt.forEach((placa) => {
               const vehiculoRecords = records.filter(r => r.placa === placa);
-
-              // 1. Obtener y estructurar todos los bloques activos (Verde y Naranja)
               const activeBlocks = [];
+
               vehiculoRecords.forEach((record) => {
                 const conductor = getConductorInfo(record.conductor_id);
+                let start = getMinutesFromTime(record.hora_inicio);
+                let end = getMinutesFromTime(record.hora_termino);
+                
+                // Si la hora de término es menor a la de inicio, asumimos que cruzó la medianoche
+                if (end < start) {
+                  end += 1440; 
+                }
+                
+                if (end > maxEndMinute) {
+                  maxEndMinute = end;
+                }
+
+                let color = '';
+                let typeLabel = '';
+                let emoji = '';
                 if (record.fase === 'emmsa') {
-                  activeBlocks.push({
-                    id: `${record.id}-emmsa`,
-                    start: getMinutesFromTime(record.hora_inicio),
-                    end: getMinutesFromTime(record.hora_termino),
-                    type: 'EMMSA',
-                    color: 'bg-[#10b981] border-[#34d399] text-white',
-                    label: `🟢 ${conductor.nombre}`,
-                    times: `${record.hora_inicio} - ${record.hora_termino}`,
-                    record,
-                    active: true
-                  });
+                  color = 'bg-[#10b981] border-[#34d399] text-white';
+                  typeLabel = 'EMMSA';
+                  emoji = '🟢';
+                } else if (record.fase === 'viaje') {
+                  color = 'bg-[#f97316] border-[#fb923c] text-white';
+                  typeLabel = 'Viaje Relleno';
+                  emoji = '🟠';
+                } else if (record.fase === 'inoperativo') {
+                  color = 'bg-[#e11d48] border-[#f43f5e] text-white';
+                  typeLabel = 'Inoperativo';
+                  emoji = '🔴';
                 }
-                if (record.fase === 'viaje') {
-                  activeBlocks.push({
-                    id: `${record.id}-viaje`,
-                    start: getMinutesFromTime(record.hora_inicio),
-                    end: getMinutesFromTime(record.hora_termino),
-                    type: 'Viaje Relleno',
-                    color: 'bg-[#f97316] border-[#fb923c] text-white',
-                    label: `🟠 ${conductor.nombre}`,
-                    times: `${record.hora_inicio} - ${record.hora_termino}`,
-                    record,
-                    active: true
-                  });
-                }
-                if (record.fase === 'inoperativo') {
-                  activeBlocks.push({
-                    id: `${record.id}-inoperativo`,
-                    start: getMinutesFromTime(record.hora_inicio),
-                    end: getMinutesFromTime(record.hora_termino),
-                    type: 'Inoperativo',
-                    color: 'bg-[#e11d48] border-[#f43f5e] text-white',
-                    label: `🔴 Inop. ${conductor.nombre}`,
-                    times: `${record.hora_inicio} - ${record.hora_termino}`,
-                    record,
-                    active: true
-                  });
-                }
+
+                activeBlocks.push({
+                  id: `${record.id}-${record.fase}`,
+                  start,
+                  end,
+                  type: typeLabel,
+                  color,
+                  label: `${emoji} ${record.fase === 'inoperativo' ? 'Inop. ' : ''}${conductor.nombre}`,
+                  times: `${record.hora_inicio} - ${record.hora_termino}`,
+                  record,
+                  active: true
+                });
               });
 
-              // Ordenar bloques activos por hora de inicio
               activeBlocks.sort((a, b) => a.start - b.start);
 
-              // 2. Calcular los bloques de "Disponible" y "Tiempo Muerto" en los espacios vacíos
+              // Rellenar vacíos
               const allBlocks = [];
-              let currentTime = 0; // Representa las 06:00 AM del inicio
+              let currentTime = 0; // Inicio desde las 00:00
 
               activeBlocks.forEach((block, idx) => {
-                // Si hay un espacio disponible antes del bloque actual
                 if (block.start > currentTime) {
                   const preceding = idx > 0 ? activeBlocks[idx - 1] : null;
                   const isDeadTime = preceding && 
@@ -367,148 +309,193 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                                      block.type === 'Viaje Relleno' && 
                                      (block.start - preceding.end) > 30;
 
-                  if (isDeadTime) {
-                    allBlocks.push({
-                      id: `dead-${placa}-${currentTime}-${block.start}`,
-                      start: currentTime,
-                      end: block.start,
-                      type: 'Tiempo Muerto',
-                      color: 'bg-amber-500/10 border-2 border-dashed border-amber-500/25 text-amber-450/70 hover:bg-amber-500/15 hover:border-amber-500/40 hover:text-amber-350/85 transition-colors',
-                      label: 'Tiempo Muerto',
-                      times: `${formatMinutesToTime(currentTime)} - ${formatMinutesToTime(block.start)}`,
-                      active: false
-                    });
-                  } else {
-                    allBlocks.push({
-                      id: `disponible-${placa}-${currentTime}-${block.start}`,
-                      start: currentTime,
-                      end: block.start,
-                      type: 'Disponible',
-                      color: 'bg-emerald-500/10 border-2 border-dashed border-emerald-500/25 text-emerald-450/60 hover:bg-emerald-500/15 hover:border-emerald-500/40 hover:text-emerald-300/80 transition-colors',
-                      label: 'Disponible',
-                      times: `${formatMinutesToTime(currentTime)} - ${formatMinutesToTime(block.start)}`,
-                      active: false
-                    });
-                  }
+                  allBlocks.push({
+                    id: `filler-${placa}-${currentTime}-${block.start}`,
+                    start: currentTime,
+                    end: block.start,
+                    type: isDeadTime ? 'Tiempo Muerto' : 'Disponible',
+                    color: isDeadTime 
+                      ? 'bg-amber-500/10 border-2 border-dashed border-amber-500/25 text-amber-450/70 hover:bg-amber-500/15 hover:border-amber-500/40 hover:text-amber-350/85 transition-colors'
+                      : 'bg-emerald-500/10 border-2 border-dashed border-emerald-500/25 text-emerald-450/60 hover:bg-emerald-500/15 hover:border-emerald-500/40 hover:text-emerald-300/80 transition-colors',
+                    label: isDeadTime ? 'Tiempo Muerto' : 'Disponible',
+                    times: `${formatMinutesToTime(currentTime)} - ${formatMinutesToTime(block.start)}`,
+                    active: false
+                  });
                 }
                 
-                // Agregar el bloque activo
                 allBlocks.push(block);
-                
-                // Avanzar el cursor de tiempo al término de este bloque
                 currentTime = Math.max(currentTime, block.end);
               });
 
-              // Si queda espacio al final de la jornada (hasta las 05:00 del día siguiente / 1440 min)
-              // Al regresar a EMMSA el carro se considera DISPONIBLE, no muerto.
-              if (currentTime < 1440) {
+              if (currentTime < maxEndMinute) {
                 allBlocks.push({
-                  id: `disponible-${placa}-${currentTime}-1440`,
+                  id: `disponible-${placa}-${currentTime}-${maxEndMinute}`,
                   start: currentTime,
-                  end: 1440,
+                  end: maxEndMinute,
                   type: 'Disponible',
                   color: 'bg-emerald-500/10 border-2 border-dashed border-emerald-500/25 text-emerald-450/60 hover:bg-emerald-500/15 hover:border-emerald-500/40 hover:text-emerald-300/80 transition-colors',
                   label: 'Disponible',
-                  times: `${formatMinutesToTime(currentTime)} - 05:00`,
+                  times: `${formatMinutesToTime(currentTime)} - ${formatMinutesToTime(maxEndMinute)}`,
                   active: false
                 });
               }
 
-              return (
-                <div key={placa} className="flex items-center h-14 group/row animate-fade-in">
-                  {/* Eje Y (Pegajoso) */}
-                  <div className="w-24 shrink-0 flex flex-col justify-center pl-3 sticky left-0 bg-slate-900 z-20 border-r border-slate-800 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.5)] h-full safe-gpu">
-                    <span className="text-base font-black text-slate-100 group-hover/row:text-indigo-400 transition-colors leading-tight">
-                      {placa}
-                    </span>
-                    <span className="text-[9px] text-slate-550 font-bold leading-none mt-0.5">
-                      {vehiculoRecords.length === 1 ? '1 registro' : `${vehiculoRecords.length} registros`}
-                    </span>
+              vehicleBlocks[placa] = allBlocks;
+            });
+
+            // Escalar el ancho de la caja dinámicamente si hay más de 24 horas (ej. 1600px base para 24h)
+            const maxHours = Math.ceil(maxEndMinute / 60);
+            const horasEjeX = Array.from({ length: maxHours + 1 }).map((_, i) => ({
+              label: `${String(i % 24).padStart(2, '0')}:00`,
+              percent: (i / maxHours) * 100
+            }));
+            const dynamicMinWidth = (1600 / 24) * maxHours;
+            const totalMinutesChart = maxHours * 60;
+
+            return (
+              <>
+                {/* EJE X */}
+                <div 
+                  className="flex border-b border-slate-800 pb-2.5 mb-3 select-none transition-all duration-300"
+                  style={{ minWidth: `${dynamicMinWidth}px` }}
+                >
+                  {/* Header de Eje Y (Pegajoso) */}
+                  <div className="w-24 shrink-0 text-slate-500 text-xs font-black uppercase tracking-wider pl-3 sticky left-0 bg-slate-900 z-30 border-r border-slate-800 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.5)] safe-gpu">
+                    Vehículo
                   </div>
-
-                  {/* Fila del Gráfico */}
-                  <div className="flex-1 h-full bg-slate-950 border-2 border-slate-800 rounded-xl relative overflow-hidden shadow-inner">
-                    
-                    {/* Cuadrícula vertical de 24 líneas (Alineadas exactamente con cada hora) */}
-                    <div className="absolute inset-0 pointer-events-none opacity-[0.12] z-0">
-                      {Array.from({ length: 24 }).map((_, i) => {
-                        const percent = (i / 24) * 100;
-                        return (
-                          <div 
-                            key={i} 
-                            className="absolute top-0 bottom-0 border-r border-dashed border-slate-700 h-full"
-                            style={{ left: `${percent}%` }}
-                          />
-                        );
-                      })}
-                    </div>
-
-                    {/* RENDERIZAR BLOQUES */}
-                    {allBlocks.map((b) => {
-                      const leftPercent = (b.start / 1440) * 100;
-                      let widthPercent = ((b.end - b.start) / 1440) * 100;
-                      if (widthPercent <= 0) widthPercent = 2.5;
-                      // Calcular ancho real en píxeles (basado en el ancho mínimo estático de 1600px)
-                      const blockWidthPx = (widthPercent / 100) * 1600;
-                      // Mostrar texto si el bloque mide más de 45px reales
-                      const mostrarTexto = b.active ? blockWidthPx > 45 : blockWidthPx > 85;
-
-                      return (
-                        <div
-                          key={b.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (b.active) {
-                              setActiveTooltip(b.record);
-                            }
-                          }}
-                          className={`absolute top-2 bottom-2 rounded-lg px-2 py-1 flex items-center justify-between transition-all z-10 overflow-hidden ${
-                            b.active
-                              ? 'border-2 cursor-pointer hover:scale-[1.01] hover:brightness-110 active:scale-[0.99] shadow-md shadow-black/25'
-                              : 'cursor-help active:scale-[0.99]'
-                          } ${b.color}`}
-                          style={{
-                            left: `${leftPercent}%`,
-                            width: `${widthPercent}%`,
-                            minWidth: b.active ? '36px' : '0px'
-                          }}
-                          title={
-                            b.active 
-                              ? `Conductor ${getConductorInfo(b.record.conductor_id).nombre} (${b.type}): ${b.times}${b.record.observaciones ? ` - Obs: ${b.record.observaciones}` : ''}` 
-                              : b.type === 'Tiempo Muerto'
-                                ? `Tiempo Muerto en EMMSA: ${b.times} (Excede 30 min)`
-                                : `Disponible en EMMSA: ${b.times}`
-                          }
-                        >
-                          <span className={`text-[10px] font-black tracking-wider flex items-center gap-1 select-none truncate ${
-                            b.active ? 'text-white' : 'text-current text-[9px] uppercase tracking-widest'
-                          }`}>
-                            {mostrarTexto ? b.label : ''}
-                          </span>
-                          
-                          {b.active && mostrarTexto && (
-                            <span className="text-[9px] font-black opacity-90 hidden sm:inline truncate pl-1">
-                              {b.times}
-                            </span>
-                          )}
-
-                          {/* Puntito indicador de Observaciones */}
-                          {b.active && b.record && b.record.observaciones && (
-                            <span 
-                              className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 border border-white shadow-sm z-20"
-                              title={`Observación: ${b.record.observaciones}`}
-                            />
-                          )}
-                        </div>
-                      );
-                    })}
-
+                  
+                  <div className="flex-1 relative flex justify-between pr-4">
+                    {horasEjeX.map((horaData, idx) => (
+                      <div 
+                        key={`h-${idx}`}
+                        className={`absolute text-[11px] font-black text-slate-400 ${
+                          horaData.percent === 0 ? 'pl-1' : '-translate-x-1/2'
+                        }`}
+                        style={{ left: `${horaData.percent}%` }}
+                      >
+                        {horaData.label}
+                      </div>
+                    ))}
                   </div>
                 </div>
-              );
-            })}
 
-          </div>
+                {/* CUERPO DE FILAS */}
+                <div 
+                  className="flex flex-col gap-2.5 relative transition-all duration-300"
+                  style={{ minWidth: `${dynamicMinWidth}px` }}
+                >
+                  {/* LÍNEA DE HORA ACTUAL */}
+                  {nowPercent >= 0 && (
+                    <div 
+                      className="absolute top-0 bottom-0 w-0.5 bg-rose-500 z-20 pointer-events-none"
+                      style={{ left: `calc(6rem + ${(nowPercent / totalMinutesChart) * 100}% * (100% - 6rem) / 100)` }}
+                    >
+                      <div className="absolute top-0 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-rose-500 ring-4 ring-rose-500/20" />
+                    </div>
+                  )}
+
+                  {placasGantt.map((placa) => {
+                    const allBlocks = vehicleBlocks[placa];
+                    const vehiculoRecords = records.filter(r => r.placa === placa);
+
+                    return (
+                      <div key={placa} className="flex items-center h-14 group/row animate-fade-in">
+                        {/* Eje Y (Pegajoso) */}
+                        <div className="w-24 shrink-0 flex flex-col justify-center pl-3 sticky left-0 bg-slate-900 z-20 border-r border-slate-800 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.5)] h-full safe-gpu">
+                          <span className="text-base font-black text-slate-100 group-hover/row:text-indigo-400 transition-colors leading-tight">
+                            {placa}
+                          </span>
+                          <span className="text-[9px] text-slate-550 font-bold leading-none mt-0.5">
+                            {vehiculoRecords.length === 1 ? '1 registro' : `${vehiculoRecords.length} registros`}
+                          </span>
+                        </div>
+
+                        {/* Fila del Gráfico */}
+                        <div className="flex-1 h-full bg-slate-950 border-2 border-slate-800 rounded-xl relative overflow-hidden shadow-inner">
+                          
+                          {/* Cuadrícula vertical de N líneas (Alineadas exactamente con cada hora) */}
+                          <div className="absolute inset-0 pointer-events-none opacity-[0.12] z-0">
+                            {Array.from({ length: maxHours }).map((_, i) => {
+                              const percent = (i / maxHours) * 100;
+                              return (
+                                <div 
+                                  key={i} 
+                                  className="absolute top-0 bottom-0 border-r border-dashed border-slate-700 h-full"
+                                  style={{ left: `${percent}%` }}
+                                />
+                              );
+                            })}
+                          </div>
+
+                          {/* RENDERIZAR BLOQUES */}
+                          {allBlocks.map((b) => {
+                            const leftPercent = (b.start / totalMinutesChart) * 100;
+                            let widthPercent = ((b.end - b.start) / totalMinutesChart) * 100;
+                            if (widthPercent <= 0) widthPercent = 1.5;
+                            // Calcular ancho real en píxeles (basado en el ancho mínimo dinámico)
+                            const blockWidthPx = (widthPercent / 100) * dynamicMinWidth;
+                            // Mostrar texto si el bloque mide más de 45px reales
+                            const mostrarTexto = b.active ? blockWidthPx > 45 : blockWidthPx > 85;
+
+                            return (
+                              <div
+                                key={b.id}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (b.active) {
+                                    setActiveTooltip(b.record);
+                                  }
+                                }}
+                                className={`absolute top-2 bottom-2 rounded-lg px-2 py-1 flex items-center justify-between transition-all z-10 overflow-hidden ${
+                                  b.active
+                                    ? 'border-2 cursor-pointer hover:scale-[1.01] hover:brightness-110 active:scale-[0.99] shadow-md shadow-black/25'
+                                    : 'cursor-help active:scale-[0.99]'
+                                } ${b.color}`}
+                                style={{
+                                  left: `${leftPercent}%`,
+                                  width: `${widthPercent}%`,
+                                  minWidth: b.active ? '36px' : '0px'
+                                }}
+                                title={
+                                  b.active 
+                                    ? `Conductor ${getConductorInfo(b.record.conductor_id).nombre} (${b.type}): ${b.times}${b.record.observaciones ? ` - Obs: ${b.record.observaciones}` : ''}` 
+                                    : b.type === 'Tiempo Muerto'
+                                      ? `Tiempo Muerto en EMMSA: ${b.times} (Excede 30 min)`
+                                      : `Disponible en EMMSA: ${b.times}`
+                                }
+                              >
+                                <span className={`text-[10px] font-black tracking-wider flex items-center gap-1 select-none truncate ${
+                                  b.active ? 'text-white' : 'text-current text-[9px] uppercase tracking-widest'
+                                }`}>
+                                  {mostrarTexto ? b.label : ''}
+                                </span>
+                                
+                                {b.active && mostrarTexto && (
+                                  <span className="text-[9px] font-black opacity-90 hidden sm:inline truncate pl-1">
+                                    {b.times}
+                                  </span>
+                                )}
+
+                                {/* Puntito indicador de Observaciones */}
+                                {b.active && b.record && b.record.observaciones && (
+                                  <span 
+                                    className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 border border-white shadow-sm z-20"
+                                    title={`Observación: ${b.record.observaciones}`}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
+
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                </div>
+              </>
+            );
+          })()}
 
         </div>
       </div>

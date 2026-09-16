@@ -546,16 +546,11 @@ export const getMinutesFromTime = (timeStr) => {
   const [hStr, mStr] = timeStr.split(':');
   const h = parseInt(hStr, 10);
   const m = parseInt(mStr, 10);
-  if (h < 6) {
-    return (h + 18) * 60 + m;
-  } else {
-    return (h - 6) * 60 + m;
-  }
+  return (h * 60) + m;
 };
 
 export const formatMinutesToTime = (minutes) => {
-  let totalHours = Math.floor(minutes / 60) + 6;
-  let actualHours = totalHours % 24;
+  let actualHours = Math.floor(minutes / 60) % 24;
   let mins = minutes % 60;
   return `${String(actualHours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
 };

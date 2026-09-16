@@ -7,7 +7,9 @@ import {
   getRecords,
   saveActiveDriversForDate,
   getActiveDriversForDate,
-  PLACAS_PRECONFIGURADAS 
+  PLACAS_PRECONFIGURADAS,
+  getMinutesFromTime,
+  formatMinutesToTime
 } from '../services/db';
 import { 
   Calendar, 
@@ -61,6 +63,15 @@ export default function SupervisorForm({
   // Mensajes de Feedback
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  const formatearDuracionInline = (minutos) => {
+    if (minutos <= 0) return '0m';
+    const hrs = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    if (hrs === 0) return `${mins}m`;
+    if (mins === 0) return `${hrs}h`;
+    return `${hrs}h ${mins}m`;
+  };
 
   // Helper functions to notify parent App of step or plate changes
   const cambiarPaso = (nuevoPaso) => {
@@ -709,6 +720,20 @@ export default function SupervisorForm({
                     </div>
                   </div>
                 </div>
+                
+                {/* AVISO DE CRUCE DE MEDIANOCHE */}
+                {horaInicio && horaTermino && getMinutesFromTime(horaTermino) < getMinutesFromTime(horaInicio) && (
+                  <div className="bg-indigo-950/45 border border-indigo-500/40 rounded-xl p-3 flex gap-2 items-start animate-fade-in">
+                    <span className="text-indigo-400 text-sm mt-0.5">ℹ️</span>
+                    <div className="text-[10px] sm:text-xs font-bold text-slate-300 leading-snug">
+                      Este registro cruza la medianoche. El sistema dividirá el tiempo automáticamente:
+                      <ul className="list-disc ml-4 mt-1 text-indigo-300 font-medium">
+                        <li><b>Hoy:</b> Hasta las 23:59 ({formatearDuracionInline(1440 - getMinutesFromTime(horaInicio))}).</li>
+                        <li><b>Mañana:</b> Desde las 00:00 hasta las {horaTermino} ({formatearDuracionInline(getMinutesFromTime(horaTermino))}).</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
 
                 {/* Observaciones */}
                 <div>

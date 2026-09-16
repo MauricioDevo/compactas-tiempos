@@ -110,11 +110,43 @@ export default function App() {
   const cargarDatos = async () => {
     try {
       const data = await getRecords(fechaSeleccionada);
-      setRegistros(data);
-      const activos = await getActiveDriversForDate(fechaSeleccionada);
-      setConductoresHoy(activos);
-    } catch (error) {
-      console.error('Error al cargar datos operativos:', error);
+      
+      // Fetch yesterday's records to find spillovers
+      const prevDate = new Date(fechaSeleccionada + 'T00:00:00');
+      prevDate.setDate(prevDate.getDate() - 1);
+      const yesterdayStr = prevDate.toISOString().split('T')[0];
+      const yesterdayData = await getRecords(yesterdayStr);
+      
+      const spillovers = yesterdayData.filter(r => {
+        return getMinutesFromTime(r.hora_termino) < getMinutesFromTime(r.hora_inicio);
+      }).map(r => ({ ...r, isSpillover: true }));
+
+      const combinedRecords = [...spillovers, ...data];
+      setRegistros(combinedRecords);
+      
+      // ... resto de carga (conductores, etc)
+      const dataConductores = await getDrivers();
+      
+      // Asistencia
+      const listadoActivos = await getActiveDriversForDate(fechaSeleccionada);
+      
+      // Determinar conductores que deben aparecer hoy
+      // (Los que están en asistencia + los que tienen registros combinados hoy)
+      const activosHoySet = new Set(listadoActivos.map(a => a.id));
+      
+      const conductoresConRegistros = new Set();
+      combinedRecords.forEach(r => {
+        if (r.conductor_id) conductoresConRegistros.add(r.conductor_id);
+      });
+
+      const conductoresAVisualizar = dataConductores.filter(c => 
+        activosHoySet.has(c.id) || conductoresConRegistros.has(c.id)
+      );
+
+      setConductoresHoy(conductoresAVisualizar);
+
+    } catch (err) {
+      console.error('Error al cargar datos principales:', err);
     }
   };
 
@@ -213,10 +245,18 @@ export default function App() {
     recordsCond.forEach(r => {
       let start = getMinutesFromTime(r.hora_inicio);
       let end = getMinutesFromTime(r.hora_termino);
-      if (end < start) end += 1440; // Cruza la medianoche
-
-      if (end > start) {
-        totalMinutos += (end - start);
+      
+      if (r.isSpillover) {
+        // Viene de ayer, así que cuenta desde las 00:00 hasta la hora de término de hoy
+        totalMinutos += end;
+      } else {
+        if (end < start) {
+          // Empezó hoy y termina mañana, contamos solo hasta la medianoche de hoy (1440 min)
+          totalMinutos += (1440 - start);
+        } else {
+          // Todo normal dentro del mismo día
+          totalMinutos += (end - start);
+        }
       }
     });
     return {
@@ -238,10 +278,10 @@ export default function App() {
   // 2. Calcular horas muertas por placa (Brechas en EMMSA > 30 min)
   const reporteHorasMuertas = PLACAS_PRECONFIGURADAS.map(placa => {
     const recordsPlaca = registros.filter(r => r.placa === placa);
-    // Ordenar considerando que si hay un registro de medianoche, su hora absoluta puede ser mayor
+    // Para ordenar, los spillovers inician visualmente a las 00:00 (0)
     const sortedRecords = [...recordsPlaca].sort((a, b) => {
-      let startA = getMinutesFromTime(a.hora_inicio);
-      let startB = getMinutesFromTime(b.hora_inicio);
+      let startA = a.isSpillover ? 0 : getMinutesFromTime(a.hora_inicio);
+      let startB = b.isSpillover ? 0 : getMinutesFromTime(b.hora_inicio);
       return startA - startB;
     });
 
@@ -254,11 +294,13 @@ export default function App() {
 
       if (preceding.fase === 'emmsa' && succeeding.fase === 'viaje') {
         let finActual = getMinutesFromTime(preceding.hora_termino);
-        if (finActual < getMinutesFromTime(preceding.hora_inicio)) finActual += 1440;
+        if (preceding.isSpillover) {
+          finActual = getMinutesFromTime(preceding.hora_termino);
+        } else if (finActual < getMinutesFromTime(preceding.hora_inicio)) {
+          finActual = 1440; // Se fue hasta el día siguiente
+        }
         
-        let inicioSiguiente = getMinutesFromTime(succeeding.hora_inicio);
-        // Si el viaje siguiente empezó después del cruce de medianoche
-        if (inicioSiguiente < getMinutesFromTime(preceding.hora_inicio)) inicioSiguiente += 1440;
+        let inicioSiguiente = succeeding.isSpillover ? 0 : getMinutesFromTime(succeeding.hora_inicio);
 
         if (inicioSiguiente > finActual) {
           const diff = inicioSiguiente - finActual;

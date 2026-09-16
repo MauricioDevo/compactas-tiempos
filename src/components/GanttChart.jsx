@@ -244,7 +244,6 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
         >
           
           {(() => {
-            let maxEndMinute = 1440; // Por defecto siempre muestra al menos 24 hrs
             const vehicleBlocks = {};
             
             placasGantt.forEach((placa) => {
@@ -256,13 +255,16 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                 let start = getMinutesFromTime(record.hora_inicio);
                 let end = getMinutesFromTime(record.hora_termino);
                 
-                // Si la hora de término es menor a la de inicio, asumimos que cruzó la medianoche
-                if (end < start) {
-                  end += 1440; 
-                }
-                
-                if (end > maxEndMinute) {
-                  maxEndMinute = end;
+                if (record.isSpillover) {
+                  // Viene del día anterior
+                  start = 0; // Inicia a la medianoche de HOY
+                  // 'end' es la hora_termino normal (ej: 01:00 = 60 mins)
+                } else {
+                  // Registro de hoy
+                  if (end < start) {
+                    // Cruza a mañana, se corta en 1440 para la gráfica de hoy
+                    end = 1440; 
+                  }
                 }
 
                 let color = '';
@@ -327,15 +329,15 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                 currentTime = Math.max(currentTime, block.end);
               });
 
-              if (currentTime < maxEndMinute) {
+              if (currentTime < 1440) {
                 allBlocks.push({
-                  id: `disponible-${placa}-${currentTime}-${maxEndMinute}`,
+                  id: `disponible-${placa}-${currentTime}-1440`,
                   start: currentTime,
-                  end: maxEndMinute,
+                  end: 1440,
                   type: 'Disponible',
                   color: 'bg-emerald-500/10 border-2 border-dashed border-emerald-500/25 text-emerald-450/60 hover:bg-emerald-500/15 hover:border-emerald-500/40 hover:text-emerald-300/80 transition-colors',
                   label: 'Disponible',
-                  times: `${formatMinutesToTime(currentTime)} - ${formatMinutesToTime(maxEndMinute)}`,
+                  times: `${formatMinutesToTime(currentTime)} - 23:59`,
                   active: false
                 });
               }
@@ -343,21 +345,20 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
               vehicleBlocks[placa] = allBlocks;
             });
 
-            // Escalar el ancho de la caja dinámicamente si hay más de 24 horas (ej. 1600px base para 24h)
-            const maxHours = Math.ceil(maxEndMinute / 60);
-            const horasEjeX = Array.from({ length: maxHours + 1 }).map((_, i) => ({
+            // 24 horas estrictas
+            const horasEjeX = Array.from({ length: 25 }).map((_, i) => ({
               label: `${String(i % 24).padStart(2, '0')}:00`,
-              percent: (i / maxHours) * 100
+              percent: (i / 24) * 100
             }));
-            const dynamicMinWidth = (1600 / 24) * maxHours;
-            const totalMinutesChart = maxHours * 60;
+            const staticMinWidth = 1600;
+            const totalMinutesChart = 1440;
 
             return (
               <>
                 {/* EJE X */}
                 <div 
                   className="flex border-b border-slate-800 pb-2.5 mb-3 select-none transition-all duration-300"
-                  style={{ minWidth: `${dynamicMinWidth}px` }}
+                  style={{ minWidth: `${staticMinWidth}px` }}
                 >
                   {/* Header de Eje Y (Pegajoso) */}
                   <div className="w-24 shrink-0 text-slate-500 text-xs font-black uppercase tracking-wider pl-3 sticky left-0 bg-slate-900 z-30 border-r border-slate-800 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.5)] safe-gpu">
@@ -382,7 +383,7 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                 {/* CUERPO DE FILAS */}
                 <div 
                   className="flex flex-col gap-2.5 relative transition-all duration-300"
-                  style={{ minWidth: `${dynamicMinWidth}px` }}
+                  style={{ minWidth: `${staticMinWidth}px` }}
                 >
                   {/* LÍNEA DE HORA ACTUAL */}
                   {nowPercent >= 0 && (
@@ -413,10 +414,10 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                         {/* Fila del Gráfico */}
                         <div className="flex-1 h-full bg-slate-950 border-2 border-slate-800 rounded-xl relative overflow-hidden shadow-inner">
                           
-                          {/* Cuadrícula vertical de N líneas (Alineadas exactamente con cada hora) */}
+                          {/* Cuadrícula vertical de 24 líneas (Alineadas exactamente con cada hora) */}
                           <div className="absolute inset-0 pointer-events-none opacity-[0.12] z-0">
-                            {Array.from({ length: maxHours }).map((_, i) => {
-                              const percent = (i / maxHours) * 100;
+                            {Array.from({ length: 24 }).map((_, i) => {
+                              const percent = (i / 24) * 100;
                               return (
                                 <div 
                                   key={i} 
@@ -432,8 +433,8 @@ export default function GanttChart({ date, records, onEditRecord, onDeleteRecord
                             const leftPercent = (b.start / totalMinutesChart) * 100;
                             let widthPercent = ((b.end - b.start) / totalMinutesChart) * 100;
                             if (widthPercent <= 0) widthPercent = 1.5;
-                            // Calcular ancho real en píxeles (basado en el ancho mínimo dinámico)
-                            const blockWidthPx = (widthPercent / 100) * dynamicMinWidth;
+                            // Calcular ancho real en píxeles (basado en el ancho mínimo estático)
+                            const blockWidthPx = (widthPercent / 100) * staticMinWidth;
                             // Mostrar texto si el bloque mide más de 45px reales
                             const mostrarTexto = b.active ? blockWidthPx > 45 : blockWidthPx > 85;
 
